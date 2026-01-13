@@ -1,0 +1,11 @@
+{
+    "name": "FinanceBilling",
+    "alias": "financebilling",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\FinanceBilling\\Providers\\FinanceBillingServiceProvider"
+    ],
+    "files": []
+}

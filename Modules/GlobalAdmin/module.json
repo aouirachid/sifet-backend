@@ -1,0 +1,11 @@
+{
+    "name": "GlobalAdmin",
+    "alias": "globaladmin",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\GlobalAdmin\\Providers\\GlobalAdminServiceProvider"
+    ],
+    "files": []
+}

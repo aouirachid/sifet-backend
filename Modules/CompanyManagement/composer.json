@@ -1,0 +1,30 @@
+{
+    "name": "nwidart/companymanagement",
+    "description": "",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Modules\\CompanyManagement\\Providers\\CompanyManagementServiceProvider"
+            ],
+            "aliases": {}
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\CompanyManagement\\": "app/",
+            "Modules\\CompanyManagement\\Database\\Factories\\": "database/factories/",
+            "Modules\\CompanyManagement\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\CompanyManagement\\Tests\\": "tests/"
+        }
+    }
+}

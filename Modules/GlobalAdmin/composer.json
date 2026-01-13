@@ -1,0 +1,30 @@
+{
+    "name": "nwidart/globaladmin",
+    "description": "",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\GlobalAdmin\\": "app/",
+            "Modules\\GlobalAdmin\\Database\\Factories\\": "database/factories/",
+            "Modules\\GlobalAdmin\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\GlobalAdmin\\Tests\\": "tests/"
+        }
+    }
+}

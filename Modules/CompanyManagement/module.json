@@ -1,0 +1,11 @@
+{
+    "name": "CompanyManagement",
+    "alias": "companymanagement",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\CompanyManagement\\Providers\\CompanyManagementServiceProvider"
+    ],
+    "files": []
+}

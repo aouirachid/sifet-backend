@@ -1,0 +1,8 @@
+{
+    "GlobalAdmin": true,
+    "CompanyManagement": true,
+    "FleetManagement": true,
+    "StoreManagement": true,
+    "OrderProcessing": true,
+    "FinanceBilling": true
+}

@@ -1,0 +1,30 @@
+{
+    "name": "nwidart/storemanagement",
+    "description": "",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\StoreManagement\\": "app/",
+            "Modules\\StoreManagement\\Database\\Factories\\": "database/factories/",
+            "Modules\\StoreManagement\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\StoreManagement\\Tests\\": "tests/"
+        }
+    }
+}

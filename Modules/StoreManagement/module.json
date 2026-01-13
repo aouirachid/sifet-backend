@@ -1,0 +1,11 @@
+{
+    "name": "StoreManagement",
+    "alias": "storemanagement",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\StoreManagement\\Providers\\StoreManagementServiceProvider"
+    ],
+    "files": []
+}

@@ -1,0 +1,11 @@
+{
+    "name": "FleetManagement",
+    "alias": "fleetmanagement",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\FleetManagement\\Providers\\FleetManagementServiceProvider"
+    ],
+    "files": []
+}

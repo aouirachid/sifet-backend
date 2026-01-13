@@ -1,0 +1,11 @@
+{
+    "name": "OrderProcessing",
+    "alias": "orderprocessing",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\OrderProcessing\\Providers\\OrderProcessingServiceProvider"
+    ],
+    "files": []
+}
