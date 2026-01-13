@@ -11,20 +11,63 @@
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
         </testsuite>
+        <!-- Module Tests -->
+        <testsuite name="Module-GlobalAdmin">
+            <directory>Modules/GlobalAdmin/tests</directory>
+        </testsuite>
+        <testsuite name="Module-CompanyManagement">
+            <directory>Modules/CompanyManagement/tests</directory>
+        </testsuite>
+        <testsuite name="Module-FinanceBilling">
+            <directory>Modules/FinanceBilling/tests</directory>
+        </testsuite>
+        <testsuite name="Module-FleetManagement">
+            <directory>Modules/FleetManagement/tests</directory>
+        </testsuite>
+        <testsuite name="Module-OrderProcessing">
+            <directory>Modules/OrderProcessing/tests</directory>
+        </testsuite>
+        <testsuite name="Module-StoreManagement">
+            <directory>Modules/StoreManagement/tests</directory>
+        </testsuite>
     </testsuites>
     <source>
         <include>
             <directory>app</directory>
+            <directory>Modules</directory>
         </include>
+        <exclude>
+            <directory>Modules/*/vendor</directory>
+            <directory>Modules/*/node_modules</directory>
+            <directory>Modules/*/tests</directory>
+        </exclude>
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="null"/>
-        <env name="CACHE_STORE" value="array"/>
-        <env name="DB_CONNECTION" value="sqlite"/>
-        <env name="DB_DATABASE" value=":memory:"/>
+        <env name="CACHE_STORE" value="redis"/>
+        <env name="CACHE_DRIVER" value="redis"/>
+        
+        <!-- Multi-tenant Database Configuration -->
+        <env name="DB_CONNECTION" value="landlord"/>
+        <env name="DB_HOST" value="127.0.0.1"/>
+        <env name="DB_PORT" value="5432"/>
+        <env name="DB_DATABASE" value="sifet_test_landlord"/>
+        <env name="DB_USERNAME" value="sifet"/>
+        <env name="DB_PASSWORD" value="secret"/>
+        
+        <!-- Landlord Database -->
+        <env name="LANDLORD_DB_DATABASE" value="sifet_test_landlord"/>
+        
+        <!-- Tenant Database (for testing) -->
+        <env name="TENANT_DB_DATABASE" value="sifet_test_tenant"/>
+        
+        <!-- Redis Configuration -->
+        <env name="REDIS_HOST" value="127.0.0.1"/>
+        <env name="REDIS_PORT" value="6379"/>
+        
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
