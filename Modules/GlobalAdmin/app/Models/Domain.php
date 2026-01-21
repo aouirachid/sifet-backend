@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\GlobalAdmin\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Str;
 
 // use Modules\GlobalAdmin\Database\Factories\DomainFactory;
@@ -14,6 +15,7 @@ class Domain extends Model
 
     // UUID comme clé primaire
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     // Champs fillable

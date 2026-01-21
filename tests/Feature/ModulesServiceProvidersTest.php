@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Support\Facades\App;
 
 it('verifies that all module service providers are loaded', function () {
@@ -7,7 +9,7 @@ it('verifies that all module service providers are loaded', function () {
     $providers = [];
 
     // Find all service provider files in modules
-    foreach (glob($modulesPath . '/*/app/Providers/*ServiceProvider.php') as $file) {
+    foreach (glob($modulesPath.'/*/app/Providers/*ServiceProvider.php') as $file) {
         // Extract module name and provider class name
         // Example: C:\path\Modules\CompanyManagement\app\Providers\CompanyManagementServiceProvider.php
         // Should become: Modules\CompanyManagement\Providers\CompanyManagementServiceProvider

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 /**
  * Example test demonstrating tenant-aware testing
- * 
+ *
  * This example shows how to:
  * - Create a test tenant
  * - Run tests in tenant context
@@ -26,7 +26,7 @@ class ExampleTenantTest extends TestCase
     {
         // This test runs against the landlord database
         // You can test tenant creation, domain management, etc.
-        
+
         $this->assertDatabaseConnection('landlord');
     }
 
@@ -47,7 +47,7 @@ class ExampleTenantTest extends TestCase
         // Any database operations will use the tenant database
         $this->assertNotNull($tenant->id);
         $this->assertEquals('Test Company', $tenant->data['name']);
-        
+
         // You can now test tenant-specific functionality
         // For example, creating companies, invoices, fleet items, etc.
     }
@@ -61,18 +61,18 @@ class ExampleTenantTest extends TestCase
         $tenant1 = $this->createAndActAsTenant([
             'data' => ['name' => 'Tenant One'],
         ]);
-        
+
         // Create some data for tenant 1
         // $company1 = Company::create(['name' => 'Company A']);
-        
+
         // Switch to second tenant
         $tenant2 = $this->createAndActAsTenant([
             'data' => ['name' => 'Tenant Two'],
         ]);
-        
+
         // Data from tenant 1 should not be accessible
         // $this->assertCount(0, Company::all());
-        
+
         $this->assertNotEquals($tenant1->id, $tenant2->id);
     }
 

@@ -18,13 +18,13 @@ Route::get('/debug-db', function () {
             'status' => 'success',
             'database' => $databaseName,
             'connection' => config('database.default'),
-            'host' => config('database.connections.' . config('database.default') . '.host'),
+            'host' => config('database.connections.'.config('database.default').'.host'),
         ]);
 
     } catch (\Exception $e) {
         return response()->json([
             'status' => 'error',
-            'message' => $e->getMessage()
+            'message' => $e->getMessage(),
         ], 500);
     }
 });
