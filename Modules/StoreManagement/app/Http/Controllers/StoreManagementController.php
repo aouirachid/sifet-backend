@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\StoreManagement\Http\Controllers;
 
 use App\Http\Controllers\Controller;

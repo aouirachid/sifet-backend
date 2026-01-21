@@ -1,15 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\GlobalAdmin\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Spatie\Multitenancy\Contracts\IsTenant;
 use Spatie\Multitenancy\Models\Concerns\UsesLandlordConnection;
-
 // use Modules\GlobalAdmin\Database\Factories\TenantFactory;
 use Spatie\Multitenancy\Models\Tenant as BaseTenant;
-
 
 class Tenant extends BaseTenant
 {
@@ -19,6 +17,7 @@ class Tenant extends BaseTenant
      * The attributes that are mass assignable.
      */
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     protected $fillable = [
@@ -40,7 +39,7 @@ class Tenant extends BaseTenant
         return $this->database_name;
     }
 
-       public function domains()
+    public function domains()
     {
         return $this->hasMany(Domain::class);
     }

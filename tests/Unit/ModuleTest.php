@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Unit;
 
-use Tests\TestCase;
 use Illuminate\Support\Facades\Facade;
+use Tests\TestCase;
 
 class ModuleTest extends TestCase
 {

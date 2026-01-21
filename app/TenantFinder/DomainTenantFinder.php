@@ -1,15 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\TenantFinder;
 
 use Illuminate\Http\Request;
+use Modules\GlobalAdmin\Models\Domain;
 use Spatie\Multitenancy\Contracts\IsTenant;
 use Spatie\Multitenancy\TenantFinder\TenantFinder;
-use Modules\GlobalAdmin\Models\Domain;
 
 class DomainTenantFinder extends TenantFinder
 {
-    //Overide
+    // Overide
     public function findForRequest(Request $request): ?IsTenant
     {
         $host = $request->getHost();

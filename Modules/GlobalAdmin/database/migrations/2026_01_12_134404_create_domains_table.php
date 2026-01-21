@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -17,7 +19,7 @@ return new class extends Migration
                 ->constrained('tenants')
                 ->onDelete('cascade');
             $table->string('domain')->unique();
-            //$table->boolean('is_primary')->default(false);
+            // $table->boolean('is_primary')->default(false);
             $table->timestamps();
         });
     }
