@@ -80,13 +80,13 @@ jobs:
           DB_DATABASE=sifet_test_landlord
           DB_USERNAME=sifet
           DB_PASSWORD=secret
-          
+
           LANDLORD_DB_DATABASE=sifet_test_landlord
           TENANT_DB_DATABASE=sifet_test_tenant
-          
+
           REDIS_HOST=127.0.0.1
           REDIS_PORT=6379
-          
+
           CACHE_DRIVER=redis
           SESSION_DRIVER=array
           QUEUE_CONNECTION=sync
