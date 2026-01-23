@@ -9,6 +9,4 @@ parameters:
     excludePaths:
         - Modules/*/vendor
         - Modules/*/node_modules
-    checkMissingIterableValueType: false
-    checkGenericClassInNonGenericObjectType: false
     reportUnmatchedIgnoredErrors: false

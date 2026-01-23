@@ -1,0 +1,16 @@
+{
+    "agents": [
+        "copilot",
+        "cursor",
+        "gemini",
+        "opencode",
+        "phpstorm"
+    ],
+    "editors": [
+        "cursor",
+        "opencode",
+        "phpstorm",
+        "vscode"
+    ],
+    "guidelines": []
+}

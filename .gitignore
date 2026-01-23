@@ -28,4 +28,7 @@ Homestead.json
 .env.production
 .phpactor.json
 auth.json
-laravel.log
+
+# Logs
+storage/logs/*.log
+*.log
