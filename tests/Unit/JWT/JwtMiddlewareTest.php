@@ -9,7 +9,6 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 use Mockery;
-use Modules\GlobalAdmin\Models\Tenant;
 use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
 use PHPOpenSourceSaver\JWTAuth\Exceptions\TokenBlacklistedException;
 use PHPOpenSourceSaver\JWTAuth\Exceptions\TokenExpiredException;
@@ -20,6 +19,19 @@ use Tests\TestCase;
 
 class JwtMiddlewareTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        
+        // Mock the Tenant class statically using an alias
+        $this->tenantMock = Mockery::mock('alias:Modules\GlobalAdmin\Models\Tenant');
+
+        // Mock the DomainTenantFinder to avoid database queries during fallback
+        $finderMock = Mockery::mock('App\TenantFinder\DomainTenantFinder');
+        $finderMock->shouldReceive('findForRequest')->andReturn(null);
+        $this->app->instance('App\TenantFinder\DomainTenantFinder', $finderMock);
+    }
+
     protected function tearDown(): void
     {
         Mockery::close();
@@ -31,15 +43,16 @@ class JwtMiddlewareTest extends TestCase
         $tenantId = 'test-tenant-123';
         $request = Request::create('/api/test', 'GET');
 
-        $tenant = Mockery::mock(Tenant::class);
+        $tenant = Mockery::mock('Modules\GlobalAdmin\Models\TenantInstance');
         $tenant->shouldReceive('makeCurrent')->once();
 
-        Tenant::shouldReceive('find')->with($tenantId)->once()->andReturn($tenant);
+        $this->tenantMock->shouldReceive('find')->with($tenantId)->once()->andReturn($tenant);
 
         $payload = Mockery::mock(Payload::class);
         $payload->shouldReceive('get')->with('tenant_id')->once()->andReturn($tenantId);
 
-        JWTAuth::shouldReceive('parseToken')->once()->andReturnSelf();
+        JWTAuth::shouldReceive('getToken')->once()->andReturn('test-token');
+        JWTAuth::shouldReceive('setToken')->with('test-token')->once()->andReturnSelf();
         JWTAuth::shouldReceive('getPayload')->once()->andReturn($payload);
 
         $middleware = new TenancyByJwtToken;
@@ -59,10 +72,11 @@ class JwtMiddlewareTest extends TestCase
         $payload = Mockery::mock(Payload::class);
         $payload->shouldReceive('get')->with('tenant_id')->once()->andReturn(null);
 
-        JWTAuth::shouldReceive('parseToken')->once()->andReturnSelf();
+        JWTAuth::shouldReceive('getToken')->once()->andReturn('test-token');
+        JWTAuth::shouldReceive('setToken')->with('test-token')->once()->andReturnSelf();
         JWTAuth::shouldReceive('getPayload')->once()->andReturn($payload);
 
-        Tenant::shouldReceive('find')->never();
+        $this->tenantMock->shouldReceive('find')->never();
 
         $middleware = new TenancyByJwtToken;
         $next = function ($request) {
@@ -79,12 +93,13 @@ class JwtMiddlewareTest extends TestCase
         $tenantId = 'non-existent-tenant';
         $request = Request::create('/api/test', 'GET');
 
-        Tenant::shouldReceive('find')->with($tenantId)->once()->andReturn(null);
+        $this->tenantMock->shouldReceive('find')->with($tenantId)->once()->andReturn(null);
 
         $payload = Mockery::mock(Payload::class);
         $payload->shouldReceive('get')->with('tenant_id')->once()->andReturn($tenantId);
 
-        JWTAuth::shouldReceive('parseToken')->once()->andReturnSelf();
+        JWTAuth::shouldReceive('getToken')->once()->andReturn('test-token');
+        JWTAuth::shouldReceive('setToken')->with('test-token')->once()->andReturnSelf();
         JWTAuth::shouldReceive('getPayload')->once()->andReturn($payload);
 
         $middleware = new TenancyByJwtToken;
@@ -101,7 +116,7 @@ class JwtMiddlewareTest extends TestCase
     {
         $request = Request::create('/api/test', 'GET');
 
-        JWTAuth::shouldReceive('parseToken')->once()->andThrow(new JWTException('Token not provided'));
+        JWTAuth::shouldReceive('getToken')->once()->andReturn(null);
 
         $middleware = new TenancyByJwtToken;
         $next = function ($request) {
@@ -117,7 +132,7 @@ class JwtMiddlewareTest extends TestCase
     {
         $request = Request::create('/api/test', 'GET');
 
-        JWTAuth::shouldReceive('parseToken')->once()->andThrow(new JWTException('Token could not be parsed'));
+        JWTAuth::shouldReceive('getToken')->once()->andThrow(new JWTException('Token could not be parsed'));
 
         $middleware = new TenancyByJwtToken;
         $next = function ($request) {
@@ -134,11 +149,11 @@ class JwtMiddlewareTest extends TestCase
         $request = Request::create('/api/test', 'GET');
         $unexpectedError = new \Exception('Unexpected error');
 
-        JWTAuth::shouldReceive('parseToken')->once()->andThrow($unexpectedError);
+        JWTAuth::shouldReceive('getToken')->once()->andThrow($unexpectedError);
 
         Log::shouldReceive('warning')
             ->once()
-            ->with('Unexpected error during tenant resolution from JWT', [
+            ->with('Erreur lors de la résolution du tenant via JWT', [
                 'error' => 'Unexpected error',
             ]);
 
@@ -163,7 +178,7 @@ class JwtMiddlewareTest extends TestCase
         foreach ($jwtExceptions as $exception) {
             $request = Request::create('/api/test', 'GET');
 
-            JWTAuth::shouldReceive('parseToken')->once()->andThrow($exception);
+            JWTAuth::shouldReceive('getToken')->once()->andThrow($exception);
 
             $middleware = new TenancyByJwtToken;
             $next = function ($request) {
@@ -181,14 +196,14 @@ class JwtMiddlewareTest extends TestCase
         $firstTenantId = 'tenant-1';
         $secondTenantId = 'tenant-2';
 
-        $firstTenant = Mockery::mock(Tenant::class);
+        $firstTenant = Mockery::mock('Modules\GlobalAdmin\Models\TenantInstance');
         $firstTenant->shouldReceive('makeCurrent')->once();
 
-        $secondTenant = Mockery::mock(Tenant::class);
+        $secondTenant = Mockery::mock('Modules\GlobalAdmin\Models\TenantInstance');
         $secondTenant->shouldReceive('makeCurrent')->once();
 
-        Tenant::shouldReceive('find')->with($firstTenantId)->once()->andReturn($firstTenant);
-        Tenant::shouldReceive('find')->with($secondTenantId)->once()->andReturn($secondTenant);
+        $this->tenantMock->shouldReceive('find')->with($firstTenantId)->once()->andReturn($firstTenant);
+        $this->tenantMock->shouldReceive('find')->with($secondTenantId)->once()->andReturn($secondTenant);
 
         $firstPayload = Mockery::mock(Payload::class);
         $firstPayload->shouldReceive('get')->with('tenant_id')->once()->andReturn($firstTenantId);
@@ -196,7 +211,8 @@ class JwtMiddlewareTest extends TestCase
         $secondPayload = Mockery::mock(Payload::class);
         $secondPayload->shouldReceive('get')->with('tenant_id')->once()->andReturn($secondTenantId);
 
-        JWTAuth::shouldReceive('parseToken')->twice()->andReturnSelf();
+        JWTAuth::shouldReceive('getToken')->twice()->andReturn('token-1', 'token-2');
+        JWTAuth::shouldReceive('setToken')->twice()->andReturnSelf();
         JWTAuth::shouldReceive('getPayload')->twice()->andReturn($firstPayload, $secondPayload);
 
         $middleware = new TenancyByJwtToken;
@@ -218,7 +234,7 @@ class JwtMiddlewareTest extends TestCase
     {
         $request = Request::create('/api/test', 'GET');
 
-        JWTAuth::shouldReceive('parseToken')->once()->andThrow(new JWTException('Token not provided'));
+        JWTAuth::shouldReceive('getToken')->once()->andReturn(null);
 
         $middleware = new TenancyByJwtToken;
         $next = function ($request) {

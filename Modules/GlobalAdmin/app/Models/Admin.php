@@ -15,6 +15,11 @@ class Admin extends Authenticatable implements JWTSubject
 {
     use HasFactory, HasUuids, Notifiable, UsesLandlordConnection;
 
+    protected static function newFactory()
+    {
+        return \Modules\GlobalAdmin\Database\Factories\AdminFactory::new();
+    }
+
     /**
      * The attributes that are mass assignable.
      *
