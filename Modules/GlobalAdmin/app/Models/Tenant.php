@@ -9,9 +9,14 @@ use Spatie\Multitenancy\Models\Concerns\UsesLandlordConnection;
 // use Modules\GlobalAdmin\Database\Factories\TenantFactory;
 use Spatie\Multitenancy\Models\Tenant as BaseTenant;
 
+/**
+ * @property string $id
+ * @property string $database_name
+ * @property array $data
+ */
 class Tenant extends BaseTenant
 {
-    use HasFactory,UsesLandlordConnection;
+    use HasFactory, UsesLandlordConnection;
 
     /**
      * The attributes that are mass assignable.

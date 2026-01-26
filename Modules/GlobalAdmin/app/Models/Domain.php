@@ -9,6 +9,12 @@ use Illuminate\Support\Str;
 
 // use Modules\GlobalAdmin\Database\Factories\DomainFactory;
 
+/**
+ * @property string $id
+ * @property string $tenant_id
+ * @property string $domain
+ * @property \Modules\GlobalAdmin\Models\Tenant $tenant
+ */
 class Domain extends Model
 {
     protected $table = 'domains';
