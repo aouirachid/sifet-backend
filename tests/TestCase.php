@@ -25,9 +25,11 @@ abstract class TestCase extends BaseTestCase
      */
     protected function createAndActAsTenant(array $attributes = []): Tenant
     {
+        $uniqueDatabaseName = env('TENANT_DB_DATABASE', 'sifet_test_tenant') . '_' . uniqid();
+        
         $defaultAttributes = [
             'id' => (string) \Illuminate\Support\Str::uuid(),
-            'database_name' => env('TENANT_DB_DATABASE', 'sifet_test_tenant'),
+            'database_name' => $uniqueDatabaseName,
             'data' => array_merge([
                 'name' => 'Test Tenant',
             ], $attributes['data'] ?? []),
