@@ -29,7 +29,7 @@ class TenancyByJwtToken
                 $payload = JWTAuth::setToken($token)->getPayload();
                 $tenantId = $payload->get('tenant_id');
                 if ($tenantId) {
-                    $tenant = Tenant::find($tenantId);
+                    $tenant = app(config('multitenancy.tenant_model', Tenant::class))->find($tenantId);
                 }
             }
         } catch (JWTException $e) {

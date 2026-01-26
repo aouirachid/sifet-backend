@@ -78,24 +78,46 @@ Route::prefix('auth')->group(function () {
 
     // Refresh token
     Route::post('refresh', function () {
+        // Try to get the authenticated guard
+        $guard = null;
+        foreach (['landlord', 'tenant', 'api'] as $guardName) {
+            if (auth($guardName)->check()) {
+                $guard = $guardName;
+                break;
+            }
+        }
+        
         return response()->json([
-            'access_token' => auth()->refresh(),
+            'access_token' => auth($guard)->refresh(),
             'token_type' => 'bearer',
-            'expires_in' => auth()->factory()->getTTL() * 60,
+            'expires_in' => auth($guard)->factory()->getTTL() * 60,
         ]);
-    })->middleware('auth:api');
+    });
 
     // Logout
     Route::post('logout', function () {
-        auth()->logout();
+        // Try to get the authenticated guard
+        foreach (['landlord', 'tenant', 'api'] as $guardName) {
+            if (auth($guardName)->check()) {
+                auth($guardName)->logout();
+                break;
+            }
+        }
 
         return response()->json(['message' => 'Successfully logged out']);
-    })->middleware('auth:api');
+    });
 
     // Current user
     Route::get('me', function () {
-        return response()->json(auth()->user());
-    })->middleware('auth:api');
+        // Try to get the authenticated user from any guard
+        foreach (['landlord', 'tenant', 'api'] as $guardName) {
+            if ($user = auth($guardName)->user()) {
+                return response()->json($user);
+            }
+        }
+        
+        return response()->json(['error' => 'Unauthorized'], 401);
+    });
 });
 
 // Protected landlord routes

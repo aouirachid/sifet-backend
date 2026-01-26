@@ -23,13 +23,9 @@ class JwtMiddlewareTest extends TestCase
     {
         parent::setUp();
 
-        // Mock the Tenant class statically using an alias
-        $this->tenantMock = Mockery::mock('alias:Modules\GlobalAdmin\Models\Tenant');
-
-        // Mock the DomainTenantFinder to avoid database queries during fallback
-        $finderMock = Mockery::mock('App\TenantFinder\DomainTenantFinder');
-        $finderMock->shouldReceive('findForRequest')->andReturn(null);
-        $this->app->instance('App\TenantFinder\DomainTenantFinder', $finderMock);
+        // Mock the Tenant class using app binding to avoid alias mock issues
+        $this->tenantMock = Mockery::mock(Tenant::class);
+        $this->app->instance(config('multitenancy.tenant_model', Tenant::class), $this->tenantMock);
     }
 
     protected function tearDown(): void

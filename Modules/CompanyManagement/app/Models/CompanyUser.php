@@ -71,7 +71,7 @@ class CompanyUser extends Authenticatable implements JWTSubject
     public function getJWTCustomClaims()
     {
         return [
-            'tenant_id' => $this->tenant_id ?? null,
+            'tenant_id' => $this->tenant_id ?? (app()->bound('currentTenant') ? app('currentTenant')->id : null),
         ];
     }
 

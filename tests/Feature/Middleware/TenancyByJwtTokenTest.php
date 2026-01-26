@@ -51,6 +51,7 @@ test('it resolves tenant from jwt token', function () {
     $payload->shouldReceive('get')->with('tenant_id')->andReturn($tenant->id);
 
     JWTAuth::shouldReceive('getToken')->once()->andReturn('fake-token');
+    JWTAuth::shouldReceive('setToken')->once()->andReturnSelf();
     JWTAuth::shouldReceive('getPayload')->once()->andReturn($payload);
 
     $request = Request::create('/', 'GET');
@@ -76,6 +77,7 @@ test('it resolves tenant from domain if jwt is missing', function () {
     ]);
 
     JWTAuth::shouldReceive('getToken')->andReturn(null);
+    JWTAuth::shouldReceive('setToken')->never();
 
     $request = Request::create('http://client1.test', 'GET');
     $middleware = new TenancyByJwtToken;

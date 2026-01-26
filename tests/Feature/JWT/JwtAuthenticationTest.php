@@ -113,7 +113,7 @@ class JwtAuthenticationTest extends TestCase
     public function test_protected_route_with_valid_landlord_token(): void
     {
         $admin = Admin::factory()->create();
-        $token = JWTAuth::fromUser($admin);
+        $token = auth('landlord')->login($admin);
 
         $response = $this->withHeaders([
             'Authorization' => 'Bearer '.$token,
@@ -128,7 +128,7 @@ class JwtAuthenticationTest extends TestCase
         $tenant = $this->createAndActAsTenant();
         $companyUser = CompanyUser::factory()->create();
 
-        $token = JWTAuth::fromUser($companyUser, ['tenant_id' => $tenant->id]);
+        $token = auth('tenant')->claims(['tenant_id' => $tenant->id])->login($companyUser);
 
         $response = $this->withHeaders([
             'Authorization' => 'Bearer '.$token,
@@ -159,7 +159,7 @@ class JwtAuthenticationTest extends TestCase
         $tenant = $this->createAndActAsTenant();
         $companyUser = CompanyUser::factory()->create();
 
-        $token = JWTAuth::fromUser($companyUser, ['tenant_id' => $tenant->id]);
+        $token = auth('tenant')->claims(['tenant_id' => $tenant->id])->login($companyUser);
         $payload = JWTAuth::setToken($token)->getPayload();
 
         $this->assertEquals($tenant->id, $payload->get('tenant_id'));
@@ -168,7 +168,7 @@ class JwtAuthenticationTest extends TestCase
     public function test_token_refresh_works_correctly(): void
     {
         $admin = Admin::factory()->create();
-        $token = JWTAuth::fromUser($admin);
+        $token = auth('landlord')->login($admin);
 
         $response = $this->withHeaders([
             'Authorization' => 'Bearer '.$token,
@@ -188,7 +188,7 @@ class JwtAuthenticationTest extends TestCase
     public function test_logout_invalidates_token(): void
     {
         $admin = Admin::factory()->create();
-        $token = JWTAuth::fromUser($admin);
+        $token = auth('landlord')->login($admin);
 
         $response = $this->withHeaders([
             'Authorization' => 'Bearer '.$token,
@@ -207,7 +207,7 @@ class JwtAuthenticationTest extends TestCase
     public function test_current_user_endpoint_returns_authenticated_user(): void
     {
         $admin = Admin::factory()->create();
-        $token = JWTAuth::fromUser($admin);
+        $token = auth('landlord')->login($admin);
 
         $response = $this->withHeaders([
             'Authorization' => 'Bearer '.$token,
@@ -222,7 +222,7 @@ class JwtAuthenticationTest extends TestCase
         $tenant = $this->createAndActAsTenant();
         $companyUser = CompanyUser::factory()->create();
 
-        $token = JWTAuth::fromUser($companyUser, ['tenant_id' => $tenant->id]);
+        $token = auth('tenant')->claims(['tenant_id' => $tenant->id])->login($companyUser);
 
         $request = Request::create('/api/test', 'GET');
         $request->headers->set('Authorization', 'Bearer '.$token);
@@ -239,7 +239,7 @@ class JwtAuthenticationTest extends TestCase
         $tenant = $this->createAndActAsTenant();
         $companyUser = CompanyUser::factory()->create();
 
-        $token = JWTAuth::fromUser($companyUser, ['tenant_id' => $tenant->id]);
+        $token = auth('tenant')->claims(['tenant_id' => $tenant->id])->login($companyUser);
 
         $response = $this->withHeaders([
             'Authorization' => 'Bearer '.$token,
@@ -253,7 +253,7 @@ class JwtAuthenticationTest extends TestCase
     {
         $admin = Admin::factory()->create();
 
-        $expiredToken = JWTAuth::customClaims(['exp' => time() - 3600])->fromUser($admin);
+        $expiredToken = auth('landlord')->claims(['exp' => time() - 3600])->login($admin);
 
         $response = $this->withHeaders([
             'Authorization' => 'Bearer '.$expiredToken,
@@ -267,8 +267,8 @@ class JwtAuthenticationTest extends TestCase
         $admin = Admin::factory()->create();
         $user = User::factory()->create();
 
-        $adminToken = JWTAuth::fromUser($admin);
-        $userToken = JWTAuth::fromUser($user);
+        $adminToken = auth('landlord')->login($admin);
+        $userToken = auth('api')->login($user);
 
         $response = $this->withHeaders([
             'Authorization' => 'Bearer '.$adminToken,
