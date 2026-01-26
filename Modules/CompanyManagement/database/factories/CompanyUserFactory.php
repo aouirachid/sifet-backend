@@ -9,14 +9,14 @@ use Illuminate\Support\Facades\Hash;
 use Modules\CompanyManagement\Models\CompanyUser;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Modules\CompanyManagement\Models\CompanyUser>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<CompanyUser>
  */
 class CompanyUserFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
-     * @var string
+     * @var class-string<CompanyUser>
      */
     protected $model = CompanyUser::class;
 

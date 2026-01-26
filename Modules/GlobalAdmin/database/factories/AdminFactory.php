@@ -9,14 +9,14 @@ use Illuminate\Support\Facades\Hash;
 use Modules\GlobalAdmin\Models\Admin;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Modules\GlobalAdmin\Models\Admin>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<Admin>
  */
 class AdminFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
-     * @var string
+     * @var class-string<Admin>
      */
     protected $model = Admin::class;
 
