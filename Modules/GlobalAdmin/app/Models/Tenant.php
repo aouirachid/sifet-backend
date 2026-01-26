@@ -9,6 +9,9 @@ use Spatie\Multitenancy\Models\Concerns\UsesLandlordConnection;
 // use Modules\GlobalAdmin\Database\Factories\TenantFactory;
 use Spatie\Multitenancy\Models\Tenant as BaseTenant;
 
+/**
+ * @property string $database_name
+ */
 class Tenant extends BaseTenant
 {
     use HasFactory,UsesLandlordConnection;
