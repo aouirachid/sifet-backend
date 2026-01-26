@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit;
 
-use Tests\TestCase;
 use Illuminate\Support\Facades\Config;
+use Tests\TestCase;
 
 class AuthConfigTest extends TestCase
 {

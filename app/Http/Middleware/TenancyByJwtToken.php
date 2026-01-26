@@ -6,10 +6,10 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Modules\GlobalAdmin\Models\Tenant;
 use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
-use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
 class TenancyByJwtToken
@@ -39,7 +39,7 @@ class TenancyByJwtToken
         }
 
         // 2. Si non trouvé via JWT, tentative via le domaine (DomainTenantFinder)
-        if (!$tenant) {
+        if (! $tenant) {
             $tenantFinderClass = config('multitenancy.tenant_finder');
             if ($tenantFinderClass) {
                 $tenant = app($tenantFinderClass)->findForRequest($request);

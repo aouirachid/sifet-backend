@@ -8,12 +8,12 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Spatie\Multitenancy\Models\Concerns\UsesLandlordConnection;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
+use Spatie\Multitenancy\Models\Concerns\UsesLandlordConnection;
 
 class Admin extends Authenticatable implements JWTSubject
 {
-    use HasFactory, Notifiable, HasUuids, UsesLandlordConnection;
+    use HasFactory, HasUuids, Notifiable, UsesLandlordConnection;
 
     /**
      * The attributes that are mass assignable.

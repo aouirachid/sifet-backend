@@ -4,22 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Feature\JWT;
 
-use Tests\TestCase;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use App\Models\User;
-use Modules\GlobalAdmin\Models\Admin;
-use Modules\GlobalAdmin\Models\Tenant;
-use Modules\CompanyManagement\Models\CompanyUser;
-use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
-use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
-use Illuminate\Http\Request;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Modules\CompanyManagement\Models\CompanyUser;
+use Modules\GlobalAdmin\Models\Admin;
+use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
+use Tests\TestCase;
 
 class JwtAuthenticationTest extends TestCase
 {
     use RefreshDatabase;
-
 
     public function test_landlord_authentication_with_valid_credentials(): void
     {
@@ -36,7 +32,7 @@ class JwtAuthenticationTest extends TestCase
             ->assertJsonStructure([
                 'access_token',
                 'token_type',
-                'expires_in'
+                'expires_in',
             ]);
 
         $this->assertArrayHasKey('access_token', $response->json());
@@ -45,7 +41,7 @@ class JwtAuthenticationTest extends TestCase
     public function test_tenant_authentication_with_valid_credentials(): void
     {
         $tenant = $this->createAndActAsTenant();
-        
+
         $companyUser = CompanyUser::factory()->create([
             'password' => Hash::make('password123'),
         ]);
@@ -59,7 +55,7 @@ class JwtAuthenticationTest extends TestCase
             ->assertJsonStructure([
                 'access_token',
                 'token_type',
-                'expires_in'
+                'expires_in',
             ]);
     }
 
@@ -78,7 +74,7 @@ class JwtAuthenticationTest extends TestCase
             ->assertJsonStructure([
                 'access_token',
                 'token_type',
-                'expires_in'
+                'expires_in',
             ]);
     }
 
@@ -100,7 +96,7 @@ class JwtAuthenticationTest extends TestCase
     public function test_tenant_authentication_with_invalid_credentials(): void
     {
         $this->createAndActAsTenant();
-        
+
         CompanyUser::factory()->create([
             'email' => 'user@company.com',
         ]);
@@ -120,7 +116,7 @@ class JwtAuthenticationTest extends TestCase
         $token = JWTAuth::fromUser($admin);
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ])->getJson('/api/landlord/protected');
 
         $response->assertStatus(200)
@@ -131,11 +127,11 @@ class JwtAuthenticationTest extends TestCase
     {
         $tenant = $this->createAndActAsTenant();
         $companyUser = CompanyUser::factory()->create();
-        
+
         $token = JWTAuth::fromUser($companyUser, ['tenant_id' => $tenant->id]);
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ])->getJson('/api/tenant/protected');
 
         $response->assertStatus(200)
@@ -162,7 +158,7 @@ class JwtAuthenticationTest extends TestCase
     {
         $tenant = $this->createAndActAsTenant();
         $companyUser = CompanyUser::factory()->create();
-        
+
         $token = JWTAuth::fromUser($companyUser, ['tenant_id' => $tenant->id]);
         $payload = JWTAuth::setToken($token)->getPayload();
 
@@ -175,14 +171,14 @@ class JwtAuthenticationTest extends TestCase
         $token = JWTAuth::fromUser($admin);
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ])->postJson('/api/auth/refresh');
 
         $response->assertStatus(200)
             ->assertJsonStructure([
                 'access_token',
                 'token_type',
-                'expires_in'
+                'expires_in',
             ]);
 
         $newToken = $response->json('access_token');
@@ -195,14 +191,14 @@ class JwtAuthenticationTest extends TestCase
         $token = JWTAuth::fromUser($admin);
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ])->postJson('/api/auth/logout');
 
         $response->assertStatus(200)
             ->assertJson(['message' => 'Successfully logged out']);
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ])->getJson('/api/landlord/protected');
 
         $response->assertStatus(401);
@@ -214,7 +210,7 @@ class JwtAuthenticationTest extends TestCase
         $token = JWTAuth::fromUser($admin);
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ])->getJson('/api/auth/me');
 
         $response->assertStatus(200)
@@ -225,11 +221,11 @@ class JwtAuthenticationTest extends TestCase
     {
         $tenant = $this->createAndActAsTenant();
         $companyUser = CompanyUser::factory()->create();
-        
+
         $token = JWTAuth::fromUser($companyUser, ['tenant_id' => $tenant->id]);
 
         $request = Request::create('/api/test', 'GET');
-        $request->headers->set('Authorization', 'Bearer ' . $token);
+        $request->headers->set('Authorization', 'Bearer '.$token);
 
         JWTAuth::setRequest($request)->parseToken();
         $payload = JWTAuth::getPayload();
@@ -242,11 +238,11 @@ class JwtAuthenticationTest extends TestCase
     {
         $tenant = $this->createAndActAsTenant();
         $companyUser = CompanyUser::factory()->create();
-        
+
         $token = JWTAuth::fromUser($companyUser, ['tenant_id' => $tenant->id]);
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ])->getJson('/api/tenant/check-context');
 
         $response->assertStatus(200)
@@ -256,11 +252,11 @@ class JwtAuthenticationTest extends TestCase
     public function test_authentication_with_expired_token(): void
     {
         $admin = Admin::factory()->create();
-        
+
         $expiredToken = JWTAuth::customClaims(['exp' => time() - 3600])->fromUser($admin);
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $expiredToken,
+            'Authorization' => 'Bearer '.$expiredToken,
         ])->getJson('/api/landlord/protected');
 
         $response->assertStatus(401);
@@ -270,24 +266,24 @@ class JwtAuthenticationTest extends TestCase
     {
         $admin = Admin::factory()->create();
         $user = User::factory()->create();
-        
+
         $adminToken = JWTAuth::fromUser($admin);
         $userToken = JWTAuth::fromUser($user);
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $adminToken,
+            'Authorization' => 'Bearer '.$adminToken,
         ])->getJson('/api/landlord/protected');
 
         $response->assertStatus(200);
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $adminToken,
+            'Authorization' => 'Bearer '.$adminToken,
         ])->getJson('/api/user/protected');
 
         $response->assertStatus(401);
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $userToken,
+            'Authorization' => 'Bearer '.$userToken,
         ])->getJson('/api/user/protected');
 
         $response->assertStatus(200);

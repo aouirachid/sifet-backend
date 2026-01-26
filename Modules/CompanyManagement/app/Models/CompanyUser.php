@@ -12,7 +12,7 @@ use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 
 class CompanyUser extends Authenticatable implements JWTSubject
 {
-    use HasFactory, Notifiable, HasUuids;
+    use HasFactory, HasUuids, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -68,5 +68,13 @@ class CompanyUser extends Authenticatable implements JWTSubject
         return [
             'tenant_id' => $this->tenant_id ?? null,
         ];
+    }
+
+    /**
+     * Get the company (tenant) that the user belongs to.
+     */
+    public function company()
+    {
+        return $this->belongsTo(\Modules\GlobalAdmin\Models\Tenant::class, 'tenant_id');
     }
 }

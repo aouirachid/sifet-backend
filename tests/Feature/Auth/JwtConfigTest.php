@@ -1,9 +1,11 @@
 <?php
 
-use Modules\GlobalAdmin\Models\Admin;
-use Modules\CompanyManagement\Models\CompanyUser;
-use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
+declare(strict_types=1);
+
 use Illuminate\Support\Str;
+use Modules\CompanyManagement\Models\CompanyUser;
+use Modules\GlobalAdmin\Models\Admin;
+use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 test('landlord guard uses jwt driver and can generate token for admin', function () {
     // Config check
@@ -14,14 +16,14 @@ test('landlord guard uses jwt driver and can generate token for admin', function
     $admin = new Admin([
         'name' => 'Super Admin',
         'email' => 'admin@sifet.com',
-        'password' => 'secret'
+        'password' => 'secret',
     ]);
     // Force ID as string to satisfy Lcobucci JWT requirement
     $admin->id = (string) Str::uuid();
 
     $token = JWTAuth::fromUser($admin);
     expect($token)->toBeString()->not->toBeEmpty();
-    
+
     $payload = JWTAuth::setToken($token)->getPayload();
     expect((string) $payload->get('sub'))->toBe((string) $admin->id);
 });
@@ -44,7 +46,7 @@ test('tenant guard uses jwt driver and can generate token for company user with 
 
     $token = JWTAuth::fromUser($user);
     expect($token)->toBeString()->not->toBeEmpty();
-    
+
     $payload = JWTAuth::setToken($token)->getPayload();
     expect((string) $payload->get('sub'))->toBe((string) $user->id);
     expect($payload->get('tenant_id'))->toBe($tenantId);

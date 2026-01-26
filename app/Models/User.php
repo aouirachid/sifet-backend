@@ -58,4 +58,12 @@ class User extends Authenticatable implements JWTSubject
     {
         return [];
     }
+
+    /**
+     * Get the tenants assigned to the user.
+     */
+    public function tenants()
+    {
+        return $this->belongsToMany(\Modules\GlobalAdmin\Models\Tenant::class);
+    }
 }
