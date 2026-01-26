@@ -11,4 +11,4 @@ parameters:
         - Modules/*/node_modules
     reportUnmatchedIgnoredErrors: false
     ignoreErrors:
-        - '#Call to an undefined static method PHPOpenSourceSaver\\JWTAuth\\Facades\\JWTAuth::(getToken|getPayload)\(\)#'
+        - '#Call to an undefined static method PHPOpenSourceSaver\\JWTAuth\\Facades\\JWTAuth::(getToken|getPayload|setToken)\(\)#'
