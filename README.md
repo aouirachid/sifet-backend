@@ -232,6 +232,26 @@ php artisan module:make-model ModelName ModuleName
 php artisan module:make-migration migration_name ModuleName
 ```
 
+### Creating API Endpoints
+
+Follow this process when creating new API endpoints:
+
+1. **[If needed] Create Migration, Model, Factory** - Set up database structure
+2. **Create Form Request** - Define validation rules and custom error messages
+3. **Create Action Class** - Implement business logic in `Modules/{Module}/app/Actions/`
+4. **Create Unit Tests for Action** - Test all scenarios (happy paths, failures, edge cases)
+5. **Create API Resource & Collection** - Transform response data
+6. **Create Controller** - Wire up Form Request, Action, and Resource
+7. **Create Feature Tests for Controller** - Test HTTP layer with authentication/authorization
+8. **Create Routes** - Register endpoint in `routes/api.php`
+
+Each module follows this structure:
+- Actions: `Modules/{Module}/app/Actions/`
+- Form Requests: `Modules/{Module}/app/Http/Requests/`
+- Resources: `Modules/{Module}/app/Http/Resources/`
+- Controllers: `Modules/{Module}/app/Http/Controllers/`
+- Tests: `Modules/{Module}/tests/Feature/` and `tests/Unit/`
+
 ---
 
 ## 🧪 Testing
@@ -341,12 +361,6 @@ vendor/bin/pint && vendor/bin/phpstan analyse && vendor/bin/pest
 
 - [CI Quick Reference](CI_QUICK_REFERENCE.md) - Quick commands for CI/CD
 - [Multi-Tenant CI Setup](MULTI_TENANT_CI_SETUP.md) - Detailed multi-tenant testing guide
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 

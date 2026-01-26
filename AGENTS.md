@@ -140,6 +140,18 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - Always create Form Request classes for validation rather than inline validation in controllers. Include both validation rules and custom error messages.
 - Check sibling Form Requests to see if the application uses array or string based validation rules.
 
+### API Endpoint Creation Process
+When creating a new API endpoint, follow this standardized process:
+
+0. **[If needed] Create Migration, Model, Factory** - Set up database structure
+1. **Create Form Request** - Define validation rules and custom error messages
+2. **Create Action Class** - Implement business logic in `Modules/{Module}/app/Actions/`
+3. **Create Unit Tests for Action** - Test all scenarios (happy paths, failures, edge cases)
+4. **Create API Resource & Collection** - Transform response data
+5. **Create Controller** - Wire up Form Request, Action, and Resource
+6. **Create Feature Tests for Controller** - Test HTTP layer with authentication/authorization
+7. **Create Routes** - Register endpoint in `routes/api.php`
+
 ### Queues
 - Use queued jobs for time-consuming operations with the `ShouldQueue` interface.
 
