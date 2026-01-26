@@ -106,22 +106,23 @@ class JwtGuardsTest extends TestCase
         $landlordProvider = $landlordGuard->getProvider();
         $tenantProvider = $tenantGuard->getProvider();
         
+        // Compare the Eloquent models configured for each provider
         $this->assertNotEquals(
-            get_class($apiProvider),
-            get_class($landlordProvider),
-            'API and Landlord guards should use different providers'
+            $apiProvider->getModel(),
+            $landlordProvider->getModel(),
+            'API and Landlord guards should use different user models'
         );
         
         $this->assertNotEquals(
-            get_class($apiProvider),
-            get_class($tenantProvider),
-            'API and Tenant guards should use different providers'
+            $apiProvider->getModel(),
+            $tenantProvider->getModel(),
+            'API and Tenant guards should use different user models'
         );
         
         $this->assertNotEquals(
-            get_class($landlordProvider),
-            get_class($tenantProvider),
-            'Landlord and Tenant guards should use different providers'
+            $landlordProvider->getModel(),
+            $tenantProvider->getModel(),
+            'Landlord and Tenant guards should use different user models'
         );
     }
 

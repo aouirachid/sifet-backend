@@ -8,6 +8,9 @@ use Tests\TestCase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Auth\EloquentUserProvider;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
+use App\Models\User;
+use Modules\GlobalAdmin\Models\Admin;
+use Modules\CompanyManagement\Models\CompanyUser;
 
 class JwtProvidersTest extends TestCase
 {
@@ -19,7 +22,7 @@ class JwtProvidersTest extends TestCase
         
         $usersProvider = $providers['users'];
         $this->assertEquals('eloquent', $usersProvider['driver'], 'Users provider must use eloquent driver');
-        $this->assertEquals(App\Models\User::class, $usersProvider['model'], 'Users provider must use User model');
+        $this->assertEquals(User::class, $usersProvider['model'], 'Users provider must use User model');
     }
 
     public function test_admins_provider_is_configured(): void
@@ -30,7 +33,7 @@ class JwtProvidersTest extends TestCase
         
         $adminsProvider = $providers['admins'];
         $this->assertEquals('eloquent', $adminsProvider['driver'], 'Admins provider must use eloquent driver');
-        $this->assertEquals(Modules\GlobalAdmin\Models\Admin::class, $adminsProvider['model'], 'Admins provider must use Admin model');
+        $this->assertEquals(Admin::class, $adminsProvider['model'], 'Admins provider must use Admin model');
     }
 
     public function test_company_users_provider_is_configured(): void
@@ -42,7 +45,7 @@ class JwtProvidersTest extends TestCase
         $companyUsersProvider = $providers['company_users'];
         $this->assertEquals('eloquent', $companyUsersProvider['driver'], 'Company users provider must use eloquent driver');
         $this->assertEquals(
-            Modules\CompanyManagement\Models\CompanyUser::class, 
+            CompanyUser::class, 
             $companyUsersProvider['model'], 
             'Company users provider must use CompanyUser model'
         );
@@ -68,19 +71,19 @@ class JwtProvidersTest extends TestCase
         $providers = Config::get('auth.providers');
         
         $this->assertEquals(
-            App\Models\User::class,
+            User::class,
             $providers['users']['model'],
             'Users provider should use App\\Models\\User'
         );
         
         $this->assertEquals(
-            Modules\GlobalAdmin\Models\Admin::class,
+            Admin::class,
             $providers['admins']['model'],
             'Admins provider should use Modules\\GlobalAdmin\\Models\\Admin'
         );
         
         $this->assertEquals(
-            Modules\CompanyManagement\Models\CompanyUser::class,
+            CompanyUser::class,
             $providers['company_users']['model'],
             'Company users provider should use Modules\\CompanyManagement\\Models\\CompanyUser'
         );
@@ -106,12 +109,15 @@ class JwtProvidersTest extends TestCase
         foreach ($providers as $providerName => $providerConfig) {
             $modelClass = $providerConfig['model'];
             
-            if (class_exists($modelClass)) {
-                $this->assertTrue(
-                    is_subclass_of($modelClass, JWTSubject::class),
-                    "Model '{$modelClass}' for provider '{$providerName}' must implement JWTSubject"
-                );
-            }
+            $this->assertTrue(
+                class_exists($modelClass),
+                "Model class '{$modelClass}' must exist"
+            );
+
+            $this->assertTrue(
+                is_subclass_of($modelClass, JWTSubject::class),
+                "Model '{$modelClass}' for provider '{$providerName}' must implement JWTSubject"
+            );
         }
     }
 
@@ -148,17 +154,20 @@ class JwtProvidersTest extends TestCase
         foreach ($providers as $providerName => $providerConfig) {
             $modelClass = $providerConfig['model'];
             
-            if (class_exists($modelClass)) {
-                $this->assertTrue(
-                    method_exists($modelClass, 'getJWTIdentifier'),
-                    "Model '{$modelClass}' must have getJWTIdentifier method"
-                );
-                
-                $this->assertTrue(
-                    method_exists($modelClass, 'getJWTCustomClaims'),
-                    "Model '{$modelClass}' must have getJWTCustomClaims method"
-                );
-            }
+            $this->assertTrue(
+                class_exists($modelClass),
+                "Model class '{$modelClass}' must exist"
+            );
+
+            $this->assertTrue(
+                method_exists($modelClass, 'getJWTIdentifier'),
+                "Model '{$modelClass}' must have getJWTIdentifier method"
+            );
+            
+            $this->assertTrue(
+                method_exists($modelClass, 'getJWTCustomClaims'),
+                "Model '{$modelClass}' must have getJWTCustomClaims method"
+            );
         }
     }
 
@@ -178,22 +187,25 @@ class JwtProvidersTest extends TestCase
         foreach ($providers as $providerName => $providerConfig) {
             $modelClass = $providerConfig['model'];
             
-            if (class_exists($modelClass)) {
-                $modelInstance = new $modelClass;
-                
-                if ($providerName === 'company_users') {
-                    $this->assertTrue(
-                        method_exists($modelInstance, 'company'),
-                        "CompanyUser model should have company relationship"
-                    );
-                }
-                
-                if ($providerName === 'users') {
-                    $this->assertTrue(
-                        method_exists($modelInstance, 'tenants'),
-                        "User model should have tenants relationship"
-                    );
-                }
+            $this->assertTrue(
+                class_exists($modelClass),
+                "Model class '{$modelClass}' must exist"
+            );
+
+            $modelInstance = new $modelClass;
+            
+            if ($providerName === 'company_users') {
+                $this->assertTrue(
+                    method_exists($modelInstance, 'company'),
+                    "CompanyUser model should have company relationship"
+                );
+            }
+            
+            if ($providerName === 'users') {
+                $this->assertTrue(
+                    method_exists($modelInstance, 'tenants'),
+                    "User model should have tenants relationship"
+                );
             }
         }
     }

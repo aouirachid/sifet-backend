@@ -20,12 +20,6 @@ class JwtAuthenticationTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-        
-        $this->artisan('config:cache');
-    }
 
     public function test_landlord_authentication_with_valid_credentials(): void
     {

@@ -10,6 +10,9 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
+use PHPOpenSourceSaver\JWTAuth\Exceptions\TokenExpiredException;
+use PHPOpenSourceSaver\JWTAuth\Exceptions\TokenInvalidException;
+use PHPOpenSourceSaver\JWTAuth\Exceptions\TokenBlacklistedException;
 use PHPOpenSourceSaver\JWTAuth\Payload;
 use Modules\GlobalAdmin\Models\Tenant;
 use Illuminate\Support\Facades\Log;
@@ -152,9 +155,9 @@ class JwtMiddlewareTest extends TestCase
     public function test_middleware_handles_various_jwt_exceptions(): void
     {
         $jwtExceptions = [
-            new PHPOpenSourceSaver\JWTAuth\Exceptions\TokenExpiredException(),
-            new PHPOpenSourceSaver\JWTAuth\Exceptions\TokenInvalidException(),
-            new PHPOpenSourceSaver\JWTAuth\Exceptions\TokenBlacklistedException(),
+            new TokenExpiredException(),
+            new TokenInvalidException(),
+            new TokenBlacklistedException(),
         ];
         
         foreach ($jwtExceptions as $exception) {
