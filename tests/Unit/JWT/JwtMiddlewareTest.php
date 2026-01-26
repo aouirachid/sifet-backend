@@ -22,7 +22,7 @@ class JwtMiddlewareTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Mock the Tenant class statically using an alias
         $this->tenantMock = Mockery::mock('alias:Modules\GlobalAdmin\Models\Tenant');
 

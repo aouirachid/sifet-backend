@@ -13,7 +13,7 @@ use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 class CompanyUser extends Authenticatable implements JWTSubject
 {
     use HasFactory, HasUuids, Notifiable;
-    
+
     protected static function newFactory()
     {
         return \Modules\CompanyManagement\Database\Factories\CompanyUserFactory::new();
