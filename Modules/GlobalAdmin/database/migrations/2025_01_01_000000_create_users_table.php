@@ -13,12 +13,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::connection('landlord')->create('users', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('full_name');
             $table->string('email')->unique();
             $table->string('password');
-            $table->string('status');
+            $table->enum('status', ['active', 'suspended']);
             $table->timestamps();
         });
     }
