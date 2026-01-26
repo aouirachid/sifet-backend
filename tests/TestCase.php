@@ -7,6 +7,7 @@ namespace Tests;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Str;
 use Modules\GlobalAdmin\Models\Tenant;
 
 abstract class TestCase extends BaseTestCase
@@ -26,7 +27,7 @@ abstract class TestCase extends BaseTestCase
     protected function createAndActAsTenant(array $attributes = []): Tenant
     {
         $defaultAttributes = [
-            'id' => 'test-tenant-'.uniqid(),
+            'id' => (string) Str::uuid(),
             'database_name' => env('TENANT_DB_DATABASE', 'sifet_test_tenant'),
             'data' => array_merge([
                 'name' => 'Test Tenant',
