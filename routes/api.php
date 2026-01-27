@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
-})->middleware('auth:api');
+})->middleware('jwt.user');
 
 Route::get('/debug-db', function () {
     try {
@@ -121,14 +121,14 @@ Route::prefix('auth')->group(function () {
 });
 
 // Protected landlord routes
-Route::prefix('landlord')->middleware('auth:landlord')->group(function () {
+Route::prefix('landlord')->middleware('jwt.landlord')->group(function () {
     Route::get('protected', function () {
         return response()->json(['user' => auth('landlord')->user()->email]);
     });
 });
 
 // Protected tenant routes
-Route::prefix('tenant')->middleware('auth:tenant')->group(function () {
+Route::prefix('tenant')->middleware('jwt.tenant')->group(function () {
     Route::get('protected', function () {
         return response()->json(['user' => auth('tenant')->user()->email]);
     });
@@ -141,7 +141,7 @@ Route::prefix('tenant')->middleware('auth:tenant')->group(function () {
 });
 
 // Protected user routes
-Route::prefix('user')->middleware('auth:api')->group(function () {
+Route::prefix('user')->middleware('jwt.user')->group(function () {
     Route::get('protected', function () {
         return response()->json(['user' => auth('api')->user()->email]);
     });

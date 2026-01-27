@@ -14,6 +14,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->alias([
+            'jwt.auth' => \App\Http\Middleware\JwtAuthenticate::class,
+            'jwt.landlord' => \App\Http\Middleware\JwtAuthenticate::class.':landlord',
+            'jwt.tenant' => \App\Http\Middleware\JwtAuthenticate::class.':tenant',
+            'jwt.user' => \App\Http\Middleware\JwtAuthenticate::class.':api',
+        ]);
+
         $middleware
             ->group('tenant', [
                 \App\Http\Middleware\TenancyByJwtToken::class,
