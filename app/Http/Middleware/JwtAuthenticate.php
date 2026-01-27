@@ -23,15 +23,33 @@ class JwtAuthenticate
         auth()->shouldUse($guard);
 
         try {
-            // Check if a token is present in the request
+            // Parse and authenticate the token
             /** @phpstan-ignore-next-line */
-            if (! JWTAuth::parseToken()->authenticate()) {
+            $user = JWTAuth::parseToken()->authenticate();
+            
+            if (!$user) {
                 return response()->json(['message' => 'User not found'], 404);
             }
+
+            // Verify the token's 'prv' claim matches the guard's provider model
+            /** @phpstan-ignore-next-line */
+            $payload = JWTAuth::getPayload();
+            $tokenPrv = $payload->get('prv');
+            
+            // Get the expected 'prv' value for this guard
+            $provider = config("auth.guards.{$guard}.provider");
+            $model = config("auth.providers.{$provider}.model");
+            $expectedPrv = sha1($model);
+            
+            // Ensure the token was issued for this guard's model
+            if ($tokenPrv !== $expectedPrv) {
+                return response()->json(['message' => 'Unauthorized'], 401);
+            }
+
         } catch (JWTException $e) {
             return response()->json(['message' => 'Unauthorized'], 401);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Unauthorized - '.$e->getMessage()], 401);
+            return response()->json(['message' => 'Unauthorized'], 401);
         }
 
         return $next($request);
