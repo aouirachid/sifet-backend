@@ -23,30 +23,30 @@ class JwtAuthenticate
             // Parse the token first to get the payload
             /** @phpstan-ignore-next-line */
             JWTAuth::parseToken();
-            
+
             // Get the payload to check the 'prv' claim
             /** @phpstan-ignore-next-line */
             $payload = JWTAuth::getPayload();
             $tokenPrv = $payload->get('prv');
-            
+
             // Get the expected 'prv' value for this guard
             $provider = config("auth.guards.{$guard}.provider");
             $model = config("auth.providers.{$provider}.model");
             $expectedPrv = sha1($model);
-            
+
             // Verify the token's 'prv' claim matches the guard's provider model
             if ($tokenPrv !== $expectedPrv) {
                 return response()->json(['message' => 'Unauthorized'], 401);
             }
-            
+
             // Now set the guard and authenticate
             auth()->shouldUse($guard);
-            
+
             // Authenticate the user with the correct guard
             /** @phpstan-ignore-next-line */
             $user = JWTAuth::authenticate();
-            
-            if (!$user) {
+
+            if (! $user) {
                 return response()->json(['message' => 'User not found'], 404);
             }
 
