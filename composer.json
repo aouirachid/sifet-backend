@@ -24,7 +24,7 @@
         "laravel/pint": "^1.27",
         "laravel/sail": "^1.41",
         "laravel/telescope": "^5.16",
-        "mockery/mockery": "^1.6",
+        "mockery/mockery": "*",
         "nunomaduro/collision": "^8.6",
         "pestphp/pest": "^3.8",
         "phpstan/phpstan": "^2.0"

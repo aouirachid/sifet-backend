@@ -19,31 +19,35 @@ class JwtAuthenticate
      */
     public function handle(Request $request, Closure $next, string $guard): Response
     {
-        // Force the use of the specified guard
-        auth()->shouldUse($guard);
-
         try {
-            // Parse and authenticate the token
+            // Parse the token first to get the payload
             /** @phpstan-ignore-next-line */
-            $user = JWTAuth::parseToken()->authenticate();
-
-            if (! $user) {
-                return response()->json(['message' => 'User not found'], 404);
-            }
-
-            // Verify the token's 'prv' claim matches the guard's provider model
+            JWTAuth::parseToken();
+            
+            // Get the payload to check the 'prv' claim
             /** @phpstan-ignore-next-line */
             $payload = JWTAuth::getPayload();
             $tokenPrv = $payload->get('prv');
-
+            
             // Get the expected 'prv' value for this guard
             $provider = config("auth.guards.{$guard}.provider");
             $model = config("auth.providers.{$provider}.model");
             $expectedPrv = sha1($model);
-
-            // Ensure the token was issued for this guard's model
+            
+            // Verify the token's 'prv' claim matches the guard's provider model
             if ($tokenPrv !== $expectedPrv) {
                 return response()->json(['message' => 'Unauthorized'], 401);
+            }
+            
+            // Now set the guard and authenticate
+            auth()->shouldUse($guard);
+            
+            // Authenticate the user with the correct guard
+            /** @phpstan-ignore-next-line */
+            $user = JWTAuth::authenticate();
+            
+            if (!$user) {
+                return response()->json(['message' => 'User not found'], 404);
             }
 
         } catch (JWTException $e) {
