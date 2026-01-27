@@ -251,9 +251,12 @@ class JwtAuthenticationTest extends TestCase
 
     public function test_authentication_with_expired_token(): void
     {
-        $admin = Admin::factory()->create();
+        $admin = \Modules\GlobalAdmin\Models\Admin::factory()->create();
 
-        $expiredToken = auth('landlord')->claims(['exp' => time() - 3600])->login($admin);
+        // Expire token by setting time back, creating it, then moving forward
+        \Illuminate\Support\Carbon::setTestNow(now()->subHours(2));
+        $expiredToken = auth('landlord')->fromUser($admin);
+        \Illuminate\Support\Carbon::setTestNow();
 
         $response = $this->withHeaders([
             'Authorization' => 'Bearer '.$expiredToken,
@@ -264,28 +267,35 @@ class JwtAuthenticationTest extends TestCase
 
     public function test_guard_isolation_between_different_authentication_types(): void
     {
-        $admin = Admin::factory()->create();
-        $user = User::factory()->create();
+        $admin = \Modules\GlobalAdmin\Models\Admin::factory()->create();
+        $user = \App\Models\User::factory()->create();
 
-        $adminToken = auth('landlord')->login($admin);
-        $userToken = auth('api')->login($user);
+        $adminToken = auth('landlord')->fromUser($admin);
+        $userToken = auth('api')->fromUser($user);
 
+        // 1. Admin token should work for landlord routes
         $response = $this->withHeaders([
             'Authorization' => 'Bearer '.$adminToken,
         ])->getJson('/api/landlord/protected');
-
         $response->assertStatus(200);
 
+        // 2. Admin token should NOT work for api (User) routes
+        // This fails if guards are not properly isolated
         $response = $this->withHeaders([
             'Authorization' => 'Bearer '.$adminToken,
         ])->getJson('/api/user/protected');
-
         $response->assertStatus(401);
 
+        // 3. User token should NOT work for landlord routes
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer '.$userToken,
+        ])->getJson('/api/landlord/protected');
+        $response->assertStatus(401);
+
+        // 4. User token should work for api (User) routes
         $response = $this->withHeaders([
             'Authorization' => 'Bearer '.$userToken,
         ])->getJson('/api/user/protected');
-
         $response->assertStatus(200);
     }
 }
