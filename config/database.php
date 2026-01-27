@@ -119,7 +119,7 @@ return [
             'driver' => 'pgsql',
             'host' => env('DB_HOST'),
             'port' => env('DB_PORT'),
-            'database' => env('LANDLORD_DB_DATABASE', 'sifet_landlord'),
+            'database' => env('LANDLORD_DB_DATABASE', env('DB_DATABASE', 'sifet_landlord')),
             'username' => env('DB_USERNAME'),
             'password' => env('DB_PASSWORD'),
         ],

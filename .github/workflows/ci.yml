@@ -81,7 +81,9 @@ jobs:
           DB_USERNAME=sifet
           DB_PASSWORD=secret
           
-          LANDLORD_DB_DATABASE=sifet_test_landlord
+          DB_USERNAME=sifet
+          DB_PASSWORD=secret
+          
           TENANT_DB_DATABASE=sifet_test_tenant
           
           REDIS_HOST=127.0.0.1
@@ -120,7 +122,10 @@ jobs:
         run: php artisan module:migrate GlobalAdmin --database=landlord --force
 
       - name: Seed Landlord Database
-        run: php artisan db:seed --database=landlord --force
+        run: |
+          php artisan db:seed --database=landlord --force
+          # Ensure cache table exists for tests
+          php artisan migrate --path=database/migrations/0001_01_01_000001_create_cache_table.php --database=landlord --force
 
       - name: Run Tenant Migrations (for test tenant)
         run: |
@@ -149,7 +154,6 @@ jobs:
           DB_DATABASE: sifet_test_landlord
           DB_USERNAME: sifet
           DB_PASSWORD: secret
-          LANDLORD_DB_DATABASE: sifet_test_landlord
           TENANT_DB_DATABASE: sifet_test_tenant
           REDIS_HOST: 127.0.0.1
           REDIS_PORT: 6379
