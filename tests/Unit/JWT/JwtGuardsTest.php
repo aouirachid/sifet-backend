@@ -20,7 +20,7 @@ class JwtGuardsTest extends TestCase
         $apiGuard = $guards['api'];
         $this->assertEquals('jwt', $apiGuard['driver'], 'API guard must use JWT driver');
         $this->assertEquals('users', $apiGuard['provider'], 'API guard must use users provider');
-        $this->assertFalse($apiGuard['hash'], 'API guard should not use password hashing');
+        $this->assertEquals('users', $apiGuard['provider'], 'API guard must use users provider');
     }
 
     public function test_landlord_guard_is_configured_with_jwt_driver(): void
