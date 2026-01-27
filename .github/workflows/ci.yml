@@ -94,16 +94,24 @@ jobs:
 
       - name: Set up PostgreSQL
         run: |
+          # Wait for PostgreSQL to be ready
+          until pg_isready -h 127.0.0.1 -p 5432 -U sifet; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+
+          # Create missing roles (root, postgres) using the 'sifet' superuser
           PGPASSWORD=secret psql -h 127.0.0.1 -U sifet -d postgres -c "CREATE ROLE root WITH SUPERUSER LOGIN PASSWORD 'password';" || true
           PGPASSWORD=secret psql -h 127.0.0.1 -U sifet -d postgres -c "CREATE ROLE postgres WITH SUPERUSER LOGIN PASSWORD 'password';" || true
-          PGPASSWORD=secret psql -h 127.0.0.1 -U sifet -d postgres -c "CREATE DATABASE sifet OWNER root;" || true
-
-      - name: Create test databases
-        run: |
-          PGPASSWORD=secret psql -h 127.0.0.1 -U sifet -d postgres -c "CREATE DATABASE sifet_test_landlord;"
-          PGPASSWORD=secret psql -h 127.0.0.1 -U sifet -d postgres -c "CREATE DATABASE sifet_test_tenant;"
-          PGPASSWORD=secret psql -h 127.0.0.1 -U sifet -d sifet_test_landlord -c "CREATE EXTENSION IF NOT EXISTS postgis;"
-          PGPASSWORD=secret psql -h 127.0.0.1 -U sifet -d sifet_test_tenant -c "CREATE EXTENSION IF NOT EXISTS postgis;"
+          
+          # Create databases
+          PGPASSWORD=secret psql -h 127.0.0.1 -U sifet -d postgres -c "CREATE DATABASE sifet OWNER sifet;" || true
+          PGPASSWORD=secret psql -h 127.0.0.1 -U sifet -d postgres -c "CREATE DATABASE sifet_test_landlord OWNER sifet;" || true
+          PGPASSWORD=secret psql -h 127.0.0.1 -U sifet -d postgres -c "CREATE DATABASE sifet_test_tenant OWNER sifet;" || true
+          
+          # Install extensions on test databases
+          PGPASSWORD=secret psql -h 127.0.0.1 -U sifet -d sifet_test_landlord -c "CREATE EXTENSION IF NOT EXISTS postgis;" || true
+          PGPASSWORD=secret psql -h 127.0.0.1 -U sifet -d sifet_test_tenant -c "CREATE EXTENSION IF NOT EXISTS postgis;" || true
 
       - name: Run Landlord Migrations
         run: php artisan migrate --database=landlord --path=database/migrations --force
