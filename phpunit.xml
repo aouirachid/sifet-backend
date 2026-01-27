@@ -62,7 +62,7 @@
         <env name="DB_PASSWORD" value="secret"/>
         
         <!-- Landlord Database -->
-        <env name="LANDLORD_DB_DATABASE" value="sifet_test_landlord"/>
+
         
         <!-- Tenant Database (for testing) -->
         <env name="TENANT_DB_DATABASE" value="sifet_test_tenant"/>

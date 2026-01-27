@@ -81,9 +81,6 @@ jobs:
           DB_USERNAME=sifet
           DB_PASSWORD=secret
           
-          DB_USERNAME=sifet
-          DB_PASSWORD=secret
-          
           TENANT_DB_DATABASE=sifet_test_tenant
           
           REDIS_HOST=127.0.0.1
@@ -116,16 +113,16 @@ jobs:
           PGPASSWORD=secret psql -h 127.0.0.1 -U sifet -d sifet_test_tenant -c "CREATE EXTENSION IF NOT EXISTS postgis;" || true
 
       - name: Run Landlord Migrations
-        run: php artisan migrate --database=landlord --path=database/migrations --force
+        run: php artisan migrate --database=landlord --force --env=testing
 
       - name: Run GlobalAdmin Module Migrations (Landlord)
-        run: php artisan module:migrate GlobalAdmin --database=landlord --force
+        run: php artisan module:migrate GlobalAdmin --database=landlord --force --env=testing
 
       - name: Seed Landlord Database
         run: |
-          php artisan db:seed --database=landlord --force
+          php artisan db:seed --database=landlord --force --env=testing
           # Ensure cache table exists for tests
-          php artisan migrate --path=database/migrations/0001_01_01_000001_create_cache_table.php --database=landlord --force
+          php artisan migrate --path=database/migrations/0001_01_01_000001_create_cache_table.php --database=landlord --force --env=testing
 
       - name: Run Tenant Migrations (for test tenant)
         run: |
