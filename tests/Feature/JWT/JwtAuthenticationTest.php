@@ -160,6 +160,7 @@ class JwtAuthenticationTest extends TestCase
         $companyUser = CompanyUser::factory()->create();
 
         $token = auth('tenant')->claims(['tenant_id' => $tenant->id])->login($companyUser);
+        /** @phpstan-ignore-next-line */
         $payload = JWTAuth::setToken($token)->getPayload();
 
         $this->assertEquals($tenant->id, $payload->get('tenant_id'));

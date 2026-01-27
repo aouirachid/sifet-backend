@@ -25,7 +25,9 @@ class TenancyByJwtToken
 
         // 1. Tentative de résolution via JWT
         try {
+            /** @phpstan-ignore-next-line */
             if ($token = JWTAuth::getToken()) {
+                /** @phpstan-ignore-next-line */
                 $payload = JWTAuth::setToken($token)->getPayload();
                 $tenantId = $payload->get('tenant_id');
                 if ($tenantId) {

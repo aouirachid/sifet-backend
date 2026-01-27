@@ -24,6 +24,7 @@ class JwtAuthenticate
 
         try {
             // Check if a token is present in the request
+            /** @phpstan-ignore-next-line */
             if (! JWTAuth::parseToken()->authenticate()) {
                 return response()->json(['message' => 'User not found'], 404);
             }
