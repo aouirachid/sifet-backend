@@ -281,7 +281,7 @@ class JwtAuthenticationTest extends TestCase
         $this->assertEquals(sha1(\App\Models\User::class), $userPayload->get('prv'), 'User token missing/wrong prv claim');
 
         // Debug: Ensure user exists in DB
-        if (!\Modules\GlobalAdmin\Models\Admin::find($admin->id)) {
+        if (! \Modules\GlobalAdmin\Models\Admin::find($admin->id)) {
             $this->fail('Admin user not found in database after creation');
         }
 
@@ -291,19 +291,19 @@ class JwtAuthenticationTest extends TestCase
         ])->getJson('/api/landlord/protected');
 
         if ($response->status() !== 200) {
-             $debugPayload = auth('landlord')->setToken($adminToken)->getPayload();
-             $debugUser = auth('landlord')->setToken($adminToken)->user(); // Attempt retrieval
+            $debugPayload = auth('landlord')->setToken($adminToken)->getPayload();
+            $debugUser = auth('landlord')->setToken($adminToken)->user(); // Attempt retrieval
 
-             dump([
-                 'status' => $response->status(),
-                 'content' => $response->content(),
-                 'token' => $adminToken,
-                 'prv_claim' => $debugPayload->get('prv'),
-                 'expected_prv' => sha1(\Modules\GlobalAdmin\Models\Admin::class),
-                 'user_retrieved' => $debugUser ? 'YES' : 'NO',
-                 'admin_id' => $admin->id, 
-                 'admin_count' => \Modules\GlobalAdmin\Models\Admin::count(),
-             ]);
+            dump([
+                'status' => $response->status(),
+                'content' => $response->content(),
+                'token' => $adminToken,
+                'prv_claim' => $debugPayload->get('prv'),
+                'expected_prv' => sha1(\Modules\GlobalAdmin\Models\Admin::class),
+                'user_retrieved' => $debugUser ? 'YES' : 'NO',
+                'admin_id' => $admin->id,
+                'admin_count' => \Modules\GlobalAdmin\Models\Admin::count(),
+            ]);
         }
         $response->assertStatus(200);
 
