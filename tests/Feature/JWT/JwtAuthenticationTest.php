@@ -272,6 +272,13 @@ class JwtAuthenticationTest extends TestCase
 
         $adminToken = auth('landlord')->fromUser($admin);
         $userToken = auth('api')->fromUser($user);
+        
+        // Ensure tokens have the 'prv' claim for isolation
+        $adminPayload = auth('landlord')->setToken($adminToken)->getPayload();
+        $userPayload = auth('api')->setToken($userToken)->getPayload();
+        
+        $this->assertEquals(sha1(\Modules\GlobalAdmin\Models\Admin::class), $adminPayload->get('prv'), 'Admin token missing/wrong prv claim');
+        $this->assertEquals(sha1(\App\Models\User::class), $userPayload->get('prv'), 'User token missing/wrong prv claim');
 
         // 1. Admin token should work for landlord routes
         $response = $this->withHeaders([
@@ -280,7 +287,6 @@ class JwtAuthenticationTest extends TestCase
         $response->assertStatus(200);
 
         // 2. Admin token should NOT work for api (User) routes
-        // This fails if guards are not properly isolated
         $response = $this->withHeaders([
             'Authorization' => 'Bearer '.$adminToken,
         ])->getJson('/api/user/protected');
