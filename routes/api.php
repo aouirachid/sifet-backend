@@ -86,7 +86,7 @@ Route::prefix('auth')->group(function () {
                 break;
             }
         }
-        
+
         return response()->json([
             'access_token' => auth($guard)->refresh(),
             'token_type' => 'bearer',
@@ -115,7 +115,7 @@ Route::prefix('auth')->group(function () {
                 return response()->json($user);
             }
         }
-        
+
         return response()->json(['error' => 'Unauthorized'], 401);
     });
 });
