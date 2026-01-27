@@ -285,20 +285,6 @@ class JwtAuthenticationTest extends TestCase
             'Authorization' => 'Bearer '.$adminToken,
         ])->getJson('/api/landlord/protected');
 
-        if ($response->status() !== 200) {
-            dump([
-                'status' => $response->status(),
-                'content' => $response->json(),
-                'db' => \Illuminate\Support\Facades\DB::connection('landlord')->getDatabaseName(),
-                'table_exists' => \Illuminate\Support\Facades\Schema::connection('landlord')->hasTable('admins') ? 'YES' : 'NO',
-                'admin_id' => $admin->id,
-                'admin_in_db' => \Modules\GlobalAdmin\Models\Admin::find($admin->id) ? 'YES' : 'NO',
-                'token_user' => auth('landlord')->setToken($adminToken)->user() ? 'YES' : 'NO',
-                'prv' => auth('landlord')->setToken($adminToken)->getPayload()->get('prv'),
-                'expected_prv' => sha1(\Modules\GlobalAdmin\Models\Admin::class),
-                'config_model' => config('auth.providers.admins.model'),
-            ]);
-        }
         $response->assertStatus(200);
 
         // 2. Admin token should NOT work for api (User) routes

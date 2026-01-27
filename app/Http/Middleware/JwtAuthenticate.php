@@ -30,7 +30,7 @@ class JwtAuthenticate
         } catch (JWTException $e) {
             return response()->json(['message' => 'Unauthorized'], 401);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Unauthorized - ' . $e->getMessage()], 401);
+            return response()->json(['message' => 'Unauthorized - '.$e->getMessage()], 401);
         }
 
         return $next($request);
