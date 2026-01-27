@@ -81,12 +81,12 @@ return [
 
         'admins' => [
             'driver' => 'eloquent',
-            'model' => Modules\GlobalAdmin\Models\Admin::class,
+            'model' => \Modules\GlobalAdmin\Models\Admin::class,
         ],
 
         'company_users' => [
             'driver' => 'eloquent',
-            'model' => Modules\CompanyManagement\Models\CompanyUser::class,
+            'model' => \Modules\CompanyManagement\Models\CompanyUser::class,
         ],
     ],
 
