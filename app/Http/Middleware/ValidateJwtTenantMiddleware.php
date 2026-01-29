@@ -25,16 +25,16 @@ class ValidateJwtTenantMiddleware
         }
 
         try {
-            /** @var \PHPOpenSourceSaver\JWTAuth\JWTAuth $jwtAuth */
-            $jwtAuth = app('jwt.auth');
+            /** @var \PHPOpenSourceSaver\JWTAuth\JWTGuard $guard */
+            $guard = auth('tenant');
 
-            // Attempt to parse the token from the request and get the payload
-            $payload = $jwtAuth->parseToken()->getPayload();
-            $jwtTenantId = $payload->get('tenant_id');
+            $jwtTenantId = $guard->payload()?->get('tenant_id');
 
             if ($jwtTenantId && (string) $jwtTenantId !== (string) $currentTenant->id) {
                 abort(403, 'Token not valid for this tenant');
             }
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+            throw $e;
         } catch (\Exception $e) {
             // No valid JWT present or token invalid - let auth middleware handle it
         }
