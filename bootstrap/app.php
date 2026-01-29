@@ -18,6 +18,10 @@ return Application::configure(basePath: dirname(__DIR__))
             ->group('tenant', [
                 \Spatie\Multitenancy\Http\Middleware\NeedsTenant::class,
                 \Spatie\Multitenancy\Http\Middleware\EnsureValidTenantSession::class,
+            ])
+            ->group('tenant.api', [
+                \Spatie\Multitenancy\Http\Middleware\NeedsTenant::class,
+                \App\Http\Middleware\ValidateJwtTenantMiddleware::class,
             ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

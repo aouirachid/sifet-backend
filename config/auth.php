@@ -47,6 +47,14 @@ return [
             'provider' => 'users',
             'hash' => false,
         ],
+        'landlord' => [
+            'driver' => 'jwt',
+            'provider' => 'admins',
+        ],
+        'tenant' => [
+            'driver' => 'jwt',
+            'provider' => 'company_users',
+        ],
     ],
 
     /*
@@ -71,11 +79,14 @@ return [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\User::class),
         ],
-
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
+        'admins' => [
+            'driver' => 'eloquent',
+            'model' => Modules\GlobalAdmin\Models\Admin::class,
+        ],
+        'company_users' => [
+            'driver' => 'eloquent',
+            'model' => Modules\CompanyManagement\Models\CompanyUser::class,
+        ],
     ],
 
     /*
