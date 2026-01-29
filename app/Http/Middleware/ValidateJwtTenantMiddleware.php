@@ -27,7 +27,7 @@ class ValidateJwtTenantMiddleware
         try {
             $jwtTenantId = auth('tenant')->payload()?->get('tenant_id');
 
-            if ($jwtTenantId && $jwtTenantId !== $currentTenant->id) {
+            if ($jwtTenantId && (string) $jwtTenantId !== (string) $currentTenant->id) {
                 abort(403, 'Token not valid for this tenant');
             }
         } catch (\Exception $e) {
