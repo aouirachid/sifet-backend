@@ -20,15 +20,19 @@ class ValidateJwtTenantMiddleware
     {
         $currentTenant = Tenant::current();
 
-        // If no tenant is resolved (e.g. landlord or public route), we might skip
-        // or if this middleware is strictly for tenant routes, we expect a tenant.
         if (! $currentTenant) {
             return $next($request);
         }
 
-        // User requested to rely on TenantFinder (Domain) resolution,
-        // effectively trusting that if the user exists in the resolved DB, they are valid.
-        // Removed explicit tenant_id claim check.
+        try {
+            $jwtTenantId = auth('tenant')->payload()?->get('tenant_id');
+
+            if ($jwtTenantId && $jwtTenantId !== $currentTenant->id) {
+                abort(403, 'Token not valid for this tenant');
+            }
+        } catch (\Exception $e) {
+            // No valid JWT present - let auth middleware handle it
+        }
 
         return $next($request);
     }

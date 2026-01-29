@@ -14,7 +14,7 @@ test('admin implements jwt subject', function () {
 });
 
 test('admin uses landlord connection', function () {
-    $classes = class_uses(Admin::class);
+    $classes = class_uses_recursive(Admin::class);
     expect($classes)->toContain(UsesLandlordConnection::class);
 });
 
