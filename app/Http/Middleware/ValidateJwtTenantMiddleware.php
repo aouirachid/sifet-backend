@@ -7,7 +7,6 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Modules\GlobalAdmin\Models\Tenant;
-use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 use Symfony\Component\HttpFoundation\Response;
 
 class ValidateJwtTenantMiddleware
@@ -26,13 +25,11 @@ class ValidateJwtTenantMiddleware
         }
 
         try {
-            // Extract tenant_id from JWT token if present
-            $token = request()->bearerToken();
-            if (! $token) {
-                return $next($request);
-            }
+            /** @var \PHPOpenSourceSaver\JWTAuth\JWTAuth $jwtAuth */
+            $jwtAuth = app('jwt.auth');
 
-            $payload = JWTAuth::setToken($token)->getPayload();
+            // Attempt to parse the token from the request and get the payload
+            $payload = $jwtAuth->parseToken()->getPayload();
             $jwtTenantId = $payload->get('tenant_id');
 
             if ($jwtTenantId && (string) $jwtTenantId !== (string) $currentTenant->id) {
