@@ -16,6 +16,11 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
+        // Ensure JWT secret is set for tests if not present in environment (fixes CI failures)
+        if (! config('jwt.secret')) {
+            config(['jwt.secret' => 'test-secret-at-least-thirty-two-characters-long']);
+        }
+
         // Enable automatic eager loading to prevent N+1 queries in tests
         // This will throw an exception if lazy loading is detected
         Model::automaticallyEagerLoadRelationships();
