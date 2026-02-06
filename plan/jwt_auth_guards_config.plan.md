@@ -1,18 +1,23 @@
 ---
 name: JWT Auth Guards Config
-overview: Configure multi-guard JWT authentication with hybrid tenant resolution - Domain-based for web users, JWT-based for mobile drivers via global credentials mapping.
+overview: Configure multi-guard JWT authentication with hybrid tenant resolution - Domain-based for web users, email domain mapping for mobile drivers with Redis caching.
 todos:
   - id: jwt-secret
     content: Run php artisan jwt:secret to generate JWT_SECRET in .env
     status: pending
-  - id: driver-credentials-migration
-    content: Create driver_credentials migration in landlord DB (email, tenant_id, driver_id)
+  - id: tenant-email-domain-migration
+    content: Add email_domain column (unique, indexed) to tenants table in landlord DB
     status: pending
-  - id: driver-credential-model
-    content: Create DriverCredential model in GlobalAdmin module with UsesLandlordConnection
+  - id: tenant-model-update
+    content: Update Tenant model to include email_domain in fillable
     status: pending
     dependencies:
-      - driver-credentials-migration
+      - tenant-email-domain-migration
+  - id: email-domain-cache-service
+    content: Create EmailDomainCacheService for Redis caching of domain→tenant mapping
+    status: pending
+    dependencies:
+      - tenant-email-domain-migration
   - id: auth-config
     content: Update config/auth.php with landlord/tenant/driver guards and providers
     status: pending
@@ -43,12 +48,11 @@ todos:
     status: pending
     dependencies:
       - driver-model
-      - driver-credential-model
   - id: driver-login-action
-    content: Create DriverLoginAction that looks up tenant via DriverCredential and authenticates
+    content: Create DriverLoginAction that extracts email domain and looks up tenant via cache
     status: pending
     dependencies:
-      - driver-credential-model
+      - email-domain-cache-service
       - driver-model
   - id: register-middleware
     content: Register middlewares in bootstrap/app.php (tenant.api, tenant.mobile groups)
@@ -61,8 +65,13 @@ todos:
     status: pending
     dependencies:
       - auth-config
+  - id: email-domain-cache-tests
+    content: Create EmailDomainCacheServiceTest for cache hit/miss/invalidation scenarios
+    status: pending
+    dependencies:
+      - email-domain-cache-service
   - id: driver-login-tests
-    content: Create DriverLoginActionTest for mobile authentication flow
+    content: Create DriverLoginActionTest for mobile authentication flow with domain extraction
     status: pending
     dependencies:
       - driver-login-action
@@ -92,7 +101,7 @@ The application has two types of API clients with different characteristics:
 | Client Type | Example Users | API Access Pattern | Tenant Resolution |
 |-------------|---------------|-------------------|-------------------|
 | **Web Apps** | CompanyUser, Store | `tenant1.sifet.com/api/...` | Via domain |
-| **Mobile Apps** | Driver | `api.sifet.com/api/...` (central) | Via JWT |
+| **Mobile Apps** | Driver | `api.sifet.com/api/...` (central) | Via email domain |
 
 ### The Mobile Driver Problem
 
@@ -108,14 +117,25 @@ To access tenant DB → Need tenant_id
 Driver only provides → email + password (no tenant info)
 ```
 
-### Solution: Hybrid Approach with Global Credentials Mapping
+### Solution: Email Domain Mapping (Multi-Tenancy Compliant)
 
-**Decision**: Use different strategies for web vs mobile:
+**Decision**: Use email domain to resolve tenant - NO driver data stored in landlord DB.
 
 | User Type | Strategy | Middleware |
 |-----------|----------|------------|
 | CompanyUser (web) | Domain-first + JWT validation | `ValidateJwtTenantMiddleware` |
-| Driver (mobile) | Global credentials lookup + JWT resolution | `TenancyByJwtToken` |
+| Driver (mobile) | Email domain lookup + JWT resolution | `TenancyByJwtToken` |
+
+**Why NOT store driver credentials in landlord DB?**
+- Violates multi-tenancy data isolation principles
+- Requires syncing data between tenant and landlord DBs
+- Driver data leaks outside tenant boundary
+
+**Email Domain Approach Benefits:**
+- NO driver data in landlord DB (strict isolation)
+- O(1) Redis cache lookup performance
+- Email uniqueness enforced per-tenant only (not globally)
+- Simpler architecture - no sync needed between DBs
 
 ## Architecture Overview: Web Users (CompanyUser)
 
@@ -129,11 +149,12 @@ Request (tenant1.sifet.com) → DomainTenantFinder → Switch DB → JWT Auth �
 **Flow**:
 ```
 1. Login: POST api.sifet.com/api/v1/mobile/auth/login {email, password}
-2. Lookup: DriverCredential (landlord DB) → find tenant_id
-3. Switch: tenant_id → makeCurrent() → switch to tenant DB
-4. Auth: Validate password in Driver table (tenant DB)
-5. Token: Generate JWT with tenant_id claim
-6. Return: JWT to mobile app
+2. Extract: Get domain from email (driver@amanadelivery.ma → @amanadelivery.ma)
+3. Lookup: Redis cache (tenant:domain:@amanadelivery.ma → tenant_id)
+4. Switch: tenant_id → makeCurrent() → switch to tenant DB
+5. Auth: Find driver by email in tenant DB, validate password
+6. Token: Generate JWT with tenant_id claim
+7. Return: JWT to mobile app
 
 Subsequent requests:
 Request (api.sifet.com) + JWT → TenancyByJwtToken → Extract tenant_id → makeCurrent() → Process
@@ -149,18 +170,23 @@ flowchart TB
     end
     
     subgraph mobile_request [Mobile Request - api.sifet.com]
+        MobileEmail[Email: driver@amanadelivery.ma]
         MobileJWT[JWT Token with tenant_id]
     end
     
     subgraph landlord_db [Landlord Database]
-        DriverCredentials[(driver_credentials)]
-        Tenants[(tenants)]
+        Tenants["tenants (with email_domain)"]
         Admins[(admins)]
+    end
+    
+    subgraph redis_cache [Redis Cache]
+        DomainCache["tenant:domain:@amanadelivery.ma → tenant_id"]
     end
     
     subgraph tenant_resolution [Tenant Resolution]
         DomainTenantFinder[DomainTenantFinder<br/>Web Users]
-        TenancyByJwtToken[TenancyByJwtToken<br/>Mobile Drivers]
+        EmailDomainLookup[EmailDomainCacheService<br/>Mobile Login]
+        TenancyByJwtToken[TenancyByJwtToken<br/>Mobile Requests]
     end
     
     subgraph tenant_db [Tenant Database]
@@ -179,6 +205,10 @@ flowchart TB
     WebJWT -->|"3. Auth + Validate"| TenantGuard
     TenantGuard --> CompanyUsers
     
+    MobileEmail -->|"1. Extract @amanadelivery.ma"| EmailDomainLookup
+    EmailDomainLookup -->|"2. Cache lookup"| redis_cache
+    redis_cache -->|"3. tenant_id"| tenant_db
+    
     MobileJWT -->|"1. Extract tenant_id"| TenancyByJwtToken
     TenancyByJwtToken -->|"2. makeCurrent()"| tenant_db
     MobileJWT -->|"3. Authenticate"| DriverGuard
@@ -193,14 +223,22 @@ flowchart TB
 sequenceDiagram
     participant App as Driver Mobile App
     participant API as api.sifet.com
+    participant Redis as Redis Cache
     participant Landlord as Landlord DB
     participant Tenant as Tenant DB
     
-    App->>API: POST /mobile/auth/login {email, password}
-    API->>Landlord: SELECT * FROM driver_credentials WHERE email = ?
-    Landlord-->>API: {tenant_id, driver_id}
-    API->>Tenant: Switch to tenant database
-    API->>Tenant: SELECT * FROM drivers WHERE id = driver_id
+    App->>API: POST /mobile/auth/login {email: driver@amanadelivery.ma, password}
+    API->>API: Extract domain: @amanadelivery.ma
+    API->>Redis: GET tenant:domain:@amanadelivery.ma
+    alt Cache Hit
+        Redis-->>API: tenant_id
+    else Cache Miss
+        API->>Landlord: SELECT id FROM tenants WHERE email_domain = @amanadelivery.ma
+        Landlord-->>API: tenant_id
+        API->>Redis: SET tenant:domain:@amanadelivery.ma tenant_id (TTL 24h)
+    end
+    API->>Tenant: Switch to tenant database (makeCurrent)
+    API->>Tenant: SELECT * FROM drivers WHERE email = driver@amanadelivery.ma
     Tenant-->>API: Driver record
     API->>API: Verify password hash
     API->>API: Generate JWT with tenant_id claim
@@ -208,7 +246,7 @@ sequenceDiagram
     
     Note over App,Tenant: Subsequent requests
     App->>API: GET /mobile/orders (Authorization: Bearer eyJ...)
-    API->>API: TenancyByJwtToken extracts tenant_id
+    API->>API: TenancyByJwtToken extracts tenant_id from JWT
     API->>Tenant: makeCurrent(tenant_id)
     API->>Tenant: Query orders for driver
     Tenant-->>API: Orders data
@@ -223,46 +261,70 @@ sequenceDiagram
 
 Run `php artisan jwt:secret` to generate and add `JWT_SECRET` to `.env`.
 
-### 2. Create Driver Credentials Table (Landlord DB)
+### 2. Add Email Domain to Tenants Table
 
-Create migration for global driver credentials mapping:
+Create migration to add email_domain column to tenants:
 
 ```php
-// database/migrations/landlord/xxxx_create_driver_credentials_table.php
-Schema::connection('landlord')->create('driver_credentials', function (Blueprint $table) {
-    $table->uuid('id')->primary();
-    $table->string('email')->unique(); // Globally unique email
-    $table->foreignUuid('tenant_id')->constrained('tenants')->cascadeOnDelete();
-    $table->uuid('driver_id'); // Reference to driver in tenant DB (not FK, different DB)
-    $table->timestamps();
-    
-    $table->index(['email']);
-    $table->index(['tenant_id', 'driver_id']);
+// database/migrations/landlord/xxxx_add_email_domain_to_tenants_table.php
+Schema::connection('landlord')->table('tenants', function (Blueprint $table) {
+    $table->string('email_domain')->unique()->nullable()->after('database_name');
+    $table->index('email_domain');
 });
 ```
 
-### 3. Create DriverCredential Model
+**Note:** The email_domain stores the company's email domain (e.g., `@amanadelivery.ma`).
 
-Create `Modules/GlobalAdmin/app/Models/DriverCredential.php`:
+### 3. Update Tenant Model
+
+Update `Modules/GlobalAdmin/app/Models/Tenant.php`:
+
+```php
+protected $fillable = [
+    'id',
+    'data',
+    'database_name',
+    'email_domain', // Add this
+];
+```
+
+### 4. Create EmailDomainCacheService
+
+Create `app/Services/EmailDomainCacheService.php`:
 
 ```php
 <?php
 
-namespace Modules\GlobalAdmin\Models;
+namespace App\Services;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Spatie\Multitenancy\Models\Concerns\UsesLandlordConnection;
+use Illuminate\Support\Facades\Cache;
+use Modules\GlobalAdmin\Models\Tenant;
 
-class DriverCredential extends Model
+final class EmailDomainCacheService
 {
-    use HasUuids, UsesLandlordConnection;
+    private const CACHE_PREFIX = 'tenant:domain:';
+    private const CACHE_TTL = 86400; // 24 hours
 
-    protected $fillable = ['email', 'tenant_id', 'driver_id'];
-
-    public function tenant()
+    public function getTenantIdByDomain(string $domain): ?string
     {
-        return $this->belongsTo(Tenant::class);
+        $cacheKey = self::CACHE_PREFIX . $domain;
+        
+        return Cache::store('redis')->remember($cacheKey, self::CACHE_TTL, function () use ($domain) {
+            return Tenant::where('email_domain', $domain)->value('id');
+        });
+    }
+
+    public function invalidate(string $domain): void
+    {
+        Cache::store('redis')->forget(self::CACHE_PREFIX . $domain);
+    }
+
+    public function warmCache(Tenant $tenant): void
+    {
+        if ($tenant->email_domain) {
+            $cacheKey = self::CACHE_PREFIX . $tenant->email_domain;
+            Cache::store('redis')->put($cacheKey, $tenant->id, self::CACHE_TTL);
+        }
     }
 }
 ```
@@ -430,36 +492,43 @@ class TenancyByJwtToken
 
 Create `Modules/FleetManagement/app/Actions/DriverLoginAction.php`:
 
-**Purpose**: Handles the global lookup and authentication for mobile drivers.
+**Purpose**: Extracts email domain, looks up tenant via cache, and authenticates driver.
 
 ```php
 <?php
 
 namespace Modules\FleetManagement\Actions;
 
+use App\Services\EmailDomainCacheService;
 use Illuminate\Support\Facades\Hash;
-use Modules\GlobalAdmin\Models\DriverCredential;
 use Modules\GlobalAdmin\Models\Tenant;
 use Modules\FleetManagement\Models\Driver;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 final class DriverLoginAction
 {
+    public function __construct(
+        private EmailDomainCacheService $domainCache
+    ) {}
+
     public function handle(string $email, string $password): array
     {
-        // Step 1: Lookup in landlord DB
-        $credential = DriverCredential::where('email', $email)->first();
+        // Step 1: Extract domain from email
+        $domain = $this->extractDomain($email);
         
-        if (!$credential) {
+        // Step 2: Lookup tenant via Redis cache (O(1) performance)
+        $tenantId = $this->domainCache->getTenantIdByDomain($domain);
+        
+        if (!$tenantId) {
             throw new \Exception('Invalid credentials');
         }
         
-        // Step 2: Switch to tenant DB
-        $tenant = Tenant::find($credential->tenant_id);
+        // Step 3: Switch to tenant DB
+        $tenant = Tenant::find($tenantId);
         $tenant->makeCurrent();
         
-        // Step 3: Find driver in tenant DB
-        $driver = Driver::find($credential->driver_id);
+        // Step 4: Find driver by email in tenant DB
+        $driver = Driver::where('email', $email)->first();
         
         if (!$driver || !Hash::check($password, $driver->password)) {
             throw new \Exception('Invalid credentials');
@@ -469,7 +538,7 @@ final class DriverLoginAction
             throw new \Exception('Account is not active');
         }
         
-        // Step 4: Generate JWT
+        // Step 5: Generate JWT
         $token = JWTAuth::fromUser($driver);
         
         return [
@@ -478,6 +547,17 @@ final class DriverLoginAction
             'expires_in' => config('jwt.ttl') * 60,
             'user' => $driver,
         ];
+    }
+
+    private function extractDomain(string $email): string
+    {
+        $parts = explode('@', $email);
+        
+        if (count($parts) !== 2 || empty($parts[1])) {
+            throw new \Exception('Invalid email format');
+        }
+        
+        return '@' . strtolower($parts[1]);
     }
 }
 ```
@@ -531,11 +611,20 @@ Route::middleware(['mobile', 'auth:driver'])->prefix('v1/mobile')->group(functio
 - Assert all guards exist with JWT driver
 - Assert all providers are correctly configured
 
+**EmailDomainCacheServiceTest** (`tests/Unit/EmailDomainCacheServiceTest.php`):
+- Test: Cache hit returns tenant_id without DB query
+- Test: Cache miss queries DB and caches result
+- Test: Invalidate clears cache entry
+- Test: warmCache populates cache correctly
+- Test: Non-existent domain returns null
+
 **DriverLoginActionTest** (`tests/Unit/DriverLoginActionTest.php`):
 - Test: Valid credentials return JWT with tenant_id
-- Test: Invalid email throws exception
+- Test: Email domain extraction works correctly
+- Test: Unknown email domain throws exception
 - Test: Invalid password throws exception
 - Test: Inactive driver throws exception
+- Test: Invalid email format throws exception
 - Test: JWT contains correct tenant_id claim
 
 **ValidateJwtTenantMiddlewareTest** (`tests/Feature/ValidateJwtTenantMiddlewareTest.php`):
@@ -559,9 +648,15 @@ Run `php artisan` to ensure no config crashes occur with stub models.
 
 | File | Action |
 |------|--------|
-| `database/migrations/landlord/xxxx_create_driver_credentials_table.php` | Create driver credentials mapping table |
-| `Modules/GlobalAdmin/app/Models/DriverCredential.php` | Create model with UsesLandlordConnection |
+| `database/migrations/landlord/xxxx_add_email_domain_to_tenants_table.php` | Add email_domain column to tenants table |
+| `Modules/GlobalAdmin/app/Models/Tenant.php` | Add email_domain to fillable array |
 | `Modules/GlobalAdmin/app/Models/Admin.php` | Create stub model with JWTSubject |
+
+### Services
+
+| File | Action |
+|------|--------|
+| `app/Services/EmailDomainCacheService.php` | Redis cache for domain→tenant_id mapping |
 
 ### Tenant Models
 
@@ -581,7 +676,7 @@ Run `php artisan` to ensure no config crashes occur with stub models.
 
 | File | Action |
 |------|--------|
-| `Modules/FleetManagement/app/Actions/DriverLoginAction.php` | Global lookup + authenticate driver |
+| `Modules/FleetManagement/app/Actions/DriverLoginAction.php` | Email domain extraction + authenticate driver |
 | `Modules/FleetManagement/app/Http/Controllers/DriverAuthController.php` | Mobile auth endpoints |
 
 ### Configuration
@@ -597,7 +692,8 @@ Run `php artisan` to ensure no config crashes occur with stub models.
 | File | Action |
 |------|--------|
 | `tests/Unit/AuthConfigTest.php` | Verify all guards configured correctly |
-| `tests/Unit/DriverLoginActionTest.php` | Test driver login flow |
+| `tests/Unit/EmailDomainCacheServiceTest.php` | Test cache hit/miss/invalidation |
+| `tests/Unit/DriverLoginActionTest.php` | Test driver login flow with domain extraction |
 | `tests/Feature/ValidateJwtTenantMiddlewareTest.php` | Test web JWT validation |
 | `tests/Feature/TenancyByJwtTokenTest.php` | Test mobile JWT resolution |
 
@@ -629,12 +725,14 @@ Run `php artisan` to ensure no config crashes occur with stub models.
 
 ```
 Login Flow:
-1. POST api.sifet.com/v1/mobile/auth/login {email, password}
-2. DriverLoginAction looks up email in driver_credentials (landlord DB)
-3. Finds tenant_id, switches to tenant database
-4. Validates password against Driver record
-5. Generates JWT with tenant_id claim
-6. Returns JWT to mobile app
+1. POST api.sifet.com/v1/mobile/auth/login {email: driver@amanadelivery.ma, password}
+2. DriverLoginAction extracts domain (@amanadelivery.ma) from email
+3. EmailDomainCacheService looks up tenant_id via Redis cache
+4. If cache miss: query landlord DB and cache result
+5. Switch to tenant database (makeCurrent)
+6. Find driver by email in tenant DB, validate password
+7. Generate JWT with tenant_id claim
+8. Return JWT to mobile app
 
 Subsequent Requests:
 1. Request arrives at api.sifet.com with JWT
@@ -646,25 +744,38 @@ Subsequent Requests:
 
 ---
 
-## Important: Driver Creation Sync
+## Tenant Onboarding: Email Domain Setup
 
-When creating a driver in tenant DB, **also create** a DriverCredential record in landlord DB:
+When SuperAdmin creates a new tenant/company:
+
+1. **Provide email domain**: e.g., `@amanadelivery.ma`
+2. **System validates**: Domain uniqueness across all tenants
+3. **Domain stored**: In `tenants.email_domain` column
+4. **Cache populated**: On first driver login (lazy) or via warm-up
+
+### Validation Rules
 
 ```php
-// In CreateDriverAction
-DB::transaction(function () use ($data) {
-    // 1. Create driver in tenant DB
-    $driver = Driver::create([...]);
-    
-    // 2. Create credential mapping in landlord DB
-    DriverCredential::create([
-        'email' => $data->email,
-        'tenant_id' => Tenant::current()->id,
-        'driver_id' => $driver->id,
-    ]);
-    
-    return $driver;
-});
+// In CreateTenantRequest or similar
+'email_domain' => [
+    'required',
+    'string',
+    'regex:/^@[a-zA-Z0-9][a-zA-Z0-9-]*\.[a-zA-Z]{2,}$/',
+    'unique:landlord.tenants,email_domain',
+],
 ```
 
-This ensures mobile login works immediately after driver creation.
+### Example Domains
+
+| Company | Email Domain | Driver Email Example |
+|---------|--------------|---------------------|
+| Amana Delivery | `@amanadelivery.ma` | `hassan@amanadelivery.ma` |
+| Flash Express | `@flashexpress.ma` | `youssef@flashexpress.ma` |
+| City Courier | `@citycourier.com` | `driver1@citycourier.com` |
+
+### Important Notes
+
+- **NO driver data in landlord DB** - strict multi-tenancy isolation
+- **Email uniqueness is per-tenant** - `hassan@amanadelivery.ma` can exist in one tenant, `hassan@flashexpress.ma` in another
+- **Driver creation** happens only in tenant DB - no sync needed
+- **Cache invalidation** required when tenant's email_domain changes
