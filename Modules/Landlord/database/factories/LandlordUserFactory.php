@@ -15,8 +15,6 @@ class LandlordUserFactory extends Factory
 {
     /**
      * The default password for testing (hashed).
-     *
-     * @var string
      */
     protected static ?string $password = null;
 

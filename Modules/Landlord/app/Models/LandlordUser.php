@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Modules\Landlord\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Modules\Landlord\Database\Factories\LandlordUserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Modules\Landlord\Database\Factories\LandlordUserFactory;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 use Spatie\Multitenancy\Models\Concerns\UsesLandlordConnection;
 
@@ -73,8 +73,6 @@ class LandlordUser extends Authenticatable implements JWTSubject
 
     /**
      * Create a new factory instance for the model.
-     *
-     * @return \Modules\Landlord\Database\Factories\LandlordUserFactory
      */
     protected static function newFactory(): LandlordUserFactory
     {

@@ -15,7 +15,7 @@ class LandlordLoginAction
      * Uses the landlord guard (JWT) and landlord_users table.
      *
      * @param  array{email: string, password: string}  $credentials
-     * @return array{token: string, user: LandlordUserResource}|null  Null when credentials are invalid
+     * @return array{token: string, user: LandlordUserResource}|null Null when credentials are invalid
      */
     public function execute(array $credentials): ?array
     {
