@@ -11,6 +11,12 @@ use Modules\Landlord\Database\Factories\LandlordUserFactory;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 use Spatie\Multitenancy\Models\Concerns\UsesLandlordConnection;
 
+/**
+ * @property string $id
+ * @property string $full_name
+ * @property string $email
+ * @property string $password
+ */
 class LandlordUser extends Authenticatable implements JWTSubject
 {
     use HasFactory, HasUuids, UsesLandlordConnection;
