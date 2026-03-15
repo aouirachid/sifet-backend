@@ -30,7 +30,7 @@ class LandlordLoginAction
         $user = Auth::guard('landlord')->user();
 
         return [
-            'token' => $token,
+            'token' => (string) $token,
             'user' => LandlordUserResource::make($user),
         ];
     }

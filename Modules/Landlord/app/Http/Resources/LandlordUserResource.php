@@ -20,10 +20,13 @@ class LandlordUserResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        /** @var LandlordUser $user */
+        $user = $this->resource;
+
         return [
-            'id' => $this->id,
-            'full_name' => $this->full_name,
-            'email' => $this->email,
+            'id' => $user->id,
+            'full_name' => $user->full_name,
+            'email' => $user->email,
         ];
     }
 }

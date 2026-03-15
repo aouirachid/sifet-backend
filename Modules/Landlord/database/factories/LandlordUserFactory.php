@@ -21,7 +21,7 @@ class LandlordUserFactory extends Factory
     /**
      * The current model being used by the factory.
      *
-     * @var string
+     * @var class-string<LandlordUser>
      */
     protected $model = LandlordUser::class;
 
