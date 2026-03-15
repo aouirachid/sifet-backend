@@ -1,0 +1,30 @@
+{
+    "name": "nwidart/landlord",
+    "description": "Landlord users authentication",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Modules\\Landlord\\Providers\\LandlordServiceProvider"
+            ],
+            "aliases": {}
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Landlord\\": "Modules/Landlord/app/",
+            "Modules\\Landlord\\Database\\Factories\\": "Modules/Landlord/database/factories/",
+            "Modules\\Landlord\\Database\\Seeders\\": "Modules/Landlord/database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\Landlord\\Tests\\": "Modules/Landlord/tests/"
+        }
+    }
+}
