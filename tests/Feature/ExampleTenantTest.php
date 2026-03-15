@@ -19,6 +19,14 @@ class ExampleTenantTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        if (! extension_loaded('pdo_pgsql')) {
+            $this->markTestSkipped('Requires pdo_pgsql (PostgreSQL driver)');
+        }
+        parent::setUp();
+    }
+
     /**
      * Test that runs in the landlord database context
      */

@@ -49,7 +49,7 @@ return [
         ],
         'landlord' => [
             'driver' => 'jwt',
-            'provider' => 'admins',
+            'provider' => 'landlord_users',
         ],
         'tenant' => [
             'driver' => 'jwt',
@@ -82,6 +82,10 @@ return [
         'admins' => [
             'driver' => 'eloquent',
             'model' => Modules\GlobalAdmin\Models\Admin::class,
+        ],
+        'landlord_users' => [
+            'driver' => 'eloquent',
+            'model' => Modules\Landlord\Models\LandlordUser::class,
         ],
         'company_users' => [
             'driver' => 'eloquent',

@@ -9,7 +9,7 @@ test('landlord guard is configured with jwt driver', function () {
 
     expect($guard)->not->toBeNull();
     expect($guard['driver'])->toBe('jwt');
-    expect($guard['provider'])->toBe('admins');
+    expect($guard['provider'])->toBe('landlord_users');
 });
 
 test('tenant guard is configured with jwt driver', function () {
@@ -34,6 +34,14 @@ test('company users provider is configured correctly', function () {
     expect($provider)->not->toBeNull();
     expect($provider['driver'])->toBe('eloquent');
     expect($provider['model'])->toBe('Modules\CompanyManagement\Models\CompanyUser');
+});
+
+test('landlord users provider is configured correctly', function () {
+    $provider = config('auth.providers.landlord_users');
+
+    expect($provider)->not->toBeNull();
+    expect($provider['driver'])->toBe('eloquent');
+    expect($provider['model'])->toBe('Modules\Landlord\Models\LandlordUser');
 });
 
 test('landlord guard can be instantiated', function () {

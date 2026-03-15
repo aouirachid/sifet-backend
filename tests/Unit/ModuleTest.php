@@ -14,6 +14,6 @@ class ModuleTest extends TestCase
     {
         // Now you can use the Module facade
         $modules = \Nwidart\Modules\Facades\Module::all(); // or use the facade class if imported
-        $this->assertCount(6, $modules);
+        $this->assertCount(7, $modules);
     }
 }

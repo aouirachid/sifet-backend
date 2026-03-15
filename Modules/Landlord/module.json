@@ -1,0 +1,11 @@
+{
+    "name": "Landlord",
+    "alias": "landlord",
+    "description": "Landlord users authentication and management",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Landlord\\Providers\\LandlordServiceProvider"
+    ],
+    "files": []
+}

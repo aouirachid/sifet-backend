@@ -1,4 +1,5 @@
 {
+    "Landlord": true,
     "GlobalAdmin": true,
     "CompanyManagement": true,
     "FleetManagement": true,
